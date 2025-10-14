@@ -624,3 +624,5 @@
 127.0.0.1 - - [14/Oct/2025 19:44:51] "GET /settings HTTP/1.1" 200 -
 127.0.0.1 - - [14/Oct/2025 19:44:51] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
 127.0.0.1 - - [14/Oct/2025 19:44:51] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:47:24] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:47:24] "GET /api/available_employee_numbers?limit=20 HTTP/1.1" 200 -

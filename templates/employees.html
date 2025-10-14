@@ -10,7 +10,10 @@
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">👥 従業員管理</span>
-            <a href="{{ url_for('index') }}" class="btn btn-light btn-sm">送信画面に戻る</a>
+            <div>
+                <a href="{{ url_for('settings') }}" class="btn btn-light btn-sm me-2">⚙️ 設定</a>
+                <a href="{{ url_for('index') }}" class="btn btn-light btn-sm">送信画面に戻る</a>
+            </div>
         </div>
     </nav>
 
@@ -56,6 +59,7 @@
                                 <th>ID</th>
                                 <th>従業員名</th>
                                 <th>従業員番号</th>
+                                <th>種別</th>
                                 <th>LINE登録状態</th>
                                 <th>在籍状況</th>
                                 <th>登録日</th>
@@ -67,7 +71,17 @@
                             <tr id="emp-row-{{ employee.id }}" {% if not employee.is_active %}style="opacity: 0.5; background-color: #f8f9fa;"{% endif %}>
                                 <td>{{ employee.id }}</td>
                                 <td>{{ employee.name }}</td>
-                                <td>{{ employee.employee_number }}</td>
+                                <td><code>{{ employee.employee_number }}</code></td>
+                                <td>
+                                    <span class="badge bg-{% if employee.employee_type == 'part_time' %}primary{% else %}secondary{% endif %} rounded-pill">
+                                        {{ 'アルバイト' if employee.employee_type == 'part_time' else '社員' }}
+                                    </span>
+                                    <br>
+                                    <button class="btn btn-xs btn-sm btn-outline-{% if employee.employee_type == 'part_time' %}secondary{% else %}primary{% endif %} mt-1"
+                                            onclick="changeEmployeeType({{ employee.id }}, '{% if employee.employee_type == 'part_time' %}full_time{% else %}part_time{% endif %}')">
+                                        {% if employee.employee_type == 'part_time' %}→ 社員{% else %}→ バイト{% endif %}
+                                    </button>
+                                </td>
                                 <td>
                                     {% if employee.line_user_id %}
                                     <span class="badge bg-success">✓ 登録済み</span>
@@ -169,6 +183,37 @@
                 }
             } catch (error) {
                 alert(`❌ ステータス変更に失敗しました: ${error.message}`);
+            }
+        }
+
+        // 従業員種別を変更
+        async function changeEmployeeType(employeeId, newType) {
+            const typeName = newType === 'part_time' ? 'アルバイト' : '社員';
+
+            if (!confirm(`この従業員を${typeName}に変更しますか？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/employees/type', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        employee_id: employeeId,
+                        employee_type: newType
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ ${result.message}`);
+                    location.reload();
+                } else {
+                    alert(`❌ エラー: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`❌ 種別変更に失敗しました: ${error.message}`);
             }
         }
 
