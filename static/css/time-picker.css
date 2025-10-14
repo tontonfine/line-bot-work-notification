@@ -1,0 +1,227 @@
+/**
+ * TimePicker Component Styles
+ * モダンで使いやすい時間選択UIのスタイル
+ */
+
+.time-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.time-picker:focus-within {
+    border-color: #4F46E5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.time-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-picker-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748B;
+    min-width: 2rem;
+}
+
+.time-picker-select {
+    appearance: none;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    background: white;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 4rem;
+    text-align: center;
+
+    /* カスタム矢印 */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23334155' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 12px;
+}
+
+.time-picker-select:hover {
+    border-color: #4F46E5;
+    background-color: #fefeff;
+}
+
+.time-picker-select:focus {
+    outline: none;
+    border-color: #4F46E5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.time-picker-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f1f5f9;
+}
+
+.time-picker-hour {
+    min-width: 4.5rem;
+}
+
+.time-picker-minute {
+    min-width: 4.5rem;
+}
+
+.time-picker-unit {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748B;
+}
+
+.time-picker-separator {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin: 0 0.25rem;
+}
+
+.time-picker-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid #e2e8f0;
+    margin-left: 0.5rem;
+}
+
+.time-picker-custom-label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: #64748B;
+    cursor: pointer;
+    user-select: none;
+}
+
+.time-picker-custom-label:hover {
+    color: #4F46E5;
+}
+
+.time-picker-custom-toggle {
+    cursor: pointer;
+    width: 1rem;
+    height: 1rem;
+    accent-color: #4F46E5;
+}
+
+.time-picker-custom-input {
+    width: 5rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    background: white;
+    border: 2px solid #cbd5e1;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.time-picker-custom-input:focus {
+    outline: none;
+    border-color: #4F46E5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.time-picker-custom-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f1f5f9;
+}
+
+/* スピンボタンを隠す（Chrome, Safari, Edge, Opera） */
+.time-picker-custom-input::-webkit-outer-spin-button,
+.time-picker-custom-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* スピンボタンを隠す（Firefox） */
+.time-picker-custom-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 640px) {
+    .time-picker {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .time-picker-separator {
+        display: none;
+    }
+
+    .time-picker-custom {
+        border-left: none;
+        border-top: 2px solid #e2e8f0;
+        padding-left: 0;
+        padding-top: 1rem;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+
+/* アクセシビリティ: ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+    .time-picker {
+        border-width: 2px;
+    }
+
+    .time-picker-select {
+        border-width: 3px;
+    }
+}
+
+/* アクセシビリティ: 動きを減らす設定 */
+@media (prefers-reduced-motion: reduce) {
+    .time-picker,
+    .time-picker-select,
+    .time-picker-custom-input {
+        transition: none;
+    }
+}
+
+/* ダークモード対応（将来的な拡張用） */
+@media (prefers-color-scheme: dark) {
+    .time-picker {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+    .time-picker-select,
+    .time-picker-custom-input {
+        background: #0f172a;
+        border-color: #475569;
+        color: #e2e8f0;
+    }
+
+    .time-picker-label,
+    .time-picker-unit,
+    .time-picker-custom-label {
+        color: #94a3b8;
+    }
+
+    .time-picker-separator {
+        color: #64748b;
+    }
+}
