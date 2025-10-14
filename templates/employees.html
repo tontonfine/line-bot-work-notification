@@ -57,12 +57,14 @@
                                 <th>従業員名</th>
                                 <th>従業員番号</th>
                                 <th>LINE登録状態</th>
+                                <th>在籍状況</th>
                                 <th>登録日</th>
+                                <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for employee in employees %}
-                            <tr>
+                            <tr id="emp-row-{{ employee.id }}" {% if not employee.is_active %}style="opacity: 0.5; background-color: #f8f9fa;"{% endif %}>
                                 <td>{{ employee.id }}</td>
                                 <td>{{ employee.name }}</td>
                                 <td>{{ employee.employee_number }}</td>
@@ -73,7 +75,19 @@
                                     <span class="badge bg-warning">未登録</span>
                                     {% endif %}
                                 </td>
+                                <td>
+                                    <span class="badge bg-{% if employee.is_active %}success{% else %}secondary{% endif %}" id="status-badge-{{ employee.id }}">
+                                        {% if employee.is_active %}✓ 在籍中{% else %}退職{% endif %}
+                                    </span>
+                                </td>
                                 <td>{{ employee.created_at }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-{% if employee.is_active %}danger{% else %}success{% endif %}"
+                                            id="status-btn-{{ employee.id }}"
+                                            onclick="toggleEmployeeStatus({{ employee.id }}, {{ employee.is_active }})">
+                                        {% if employee.is_active %}退職処理{% else %}再雇用{% endif %}
+                                    </button>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -122,6 +136,39 @@
                 console.error('番号取得エラー:', error);
                 const select = document.getElementById('employeeNumber');
                 select.innerHTML = '<option value="">エラー: 番号を取得できませんでした</option>';
+            }
+        }
+
+        // 従業員の在籍状況を切り替え
+        async function toggleEmployeeStatus(employeeId, currentStatus) {
+            const newStatus = currentStatus ? 0 : 1;
+            const statusName = newStatus ? '在籍' : '退職';
+            const actionName = newStatus ? '再雇用' : '退職処理';
+
+            if (!confirm(`この従業員を${actionName}しますか？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/employees/status', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        employee_id: employeeId,
+                        is_active: newStatus
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ ${result.message}`);
+                    location.reload();
+                } else {
+                    alert(`❌ エラー: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`❌ ステータス変更に失敗しました: ${error.message}`);
             }
         }
 

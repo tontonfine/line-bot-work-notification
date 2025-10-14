@@ -83,6 +83,10 @@ def migrate_database():
             cursor.execute("ALTER TABLE employees ADD COLUMN employee_type TEXT DEFAULT 'part_time'")
             print("✅ employees.employee_type カラム追加")
 
+        if 'is_active' not in columns:
+            cursor.execute("ALTER TABLE employees ADD COLUMN is_active INTEGER DEFAULT 1")
+            print("✅ employees.is_active カラム追加")
+
         # 2. work_schedules テーブルに追跡カラムを追加
         cursor.execute("PRAGMA table_info(work_schedules)")
         columns = [column[1] for column in cursor.fetchall()]
@@ -430,19 +434,19 @@ def update_employee_type(employee_id, employee_type):
     return affected > 0
 
 def get_part_time_employees():
-    """アルバイト従業員のみ取得"""
+    """アルバイト従業員のみ取得（在籍中のみ）"""
     conn = get_db_connection()
     employees = conn.execute(
-        "SELECT * FROM employees WHERE employee_type = 'part_time' ORDER BY name"
+        "SELECT * FROM employees WHERE employee_type = 'part_time' AND is_active = 1 ORDER BY name"
     ).fetchall()
     conn.close()
     return employees
 
 def get_full_time_employees():
-    """社員のみ取得"""
+    """社員のみ取得（在籍中のみ）"""
     conn = get_db_connection()
     employees = conn.execute(
-        "SELECT * FROM employees WHERE employee_type = 'full_time' ORDER BY name"
+        "SELECT * FROM employees WHERE employee_type = 'full_time' AND is_active = 1 ORDER BY name"
     ).fetchall()
     conn.close()
     return employees
@@ -550,6 +554,28 @@ def get_available_employee_numbers(limit=10):
                 break
 
     return available
+
+def get_active_employees():
+    """在籍中の従業員のみ取得"""
+    conn = get_db_connection()
+    employees = conn.execute(
+        'SELECT * FROM employees WHERE is_active = 1 ORDER BY name'
+    ).fetchall()
+    conn.close()
+    return employees
+
+def update_employee_active_status(employee_id, is_active):
+    """従業員の在籍状況を更新"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE employees SET is_active = ? WHERE id = ?',
+        (is_active, employee_id)
+    )
+    conn.commit()
+    affected = cursor.rowcount
+    conn.close()
+    return affected > 0
 
 if __name__ == '__main__':
     # データベース初期化

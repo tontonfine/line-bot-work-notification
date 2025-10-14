@@ -14,7 +14,7 @@ from database import (
     update_employee_type, get_setting, update_setting,
     get_notification_managers, add_notification_manager, remove_notification_manager,
     update_work_schedule_reply_status, get_latest_pending_schedule,
-    get_available_employee_numbers
+    get_available_employee_numbers, get_active_employees, update_employee_active_status
 )
 from line_sender import send_bulk_notifications
 from auth import require_auth, login_user, logout_user, change_password, is_authenticated
@@ -446,6 +446,28 @@ def api_available_employee_numbers():
     limit = request.args.get('limit', 10, type=int)
     available_numbers = get_available_employee_numbers(limit)
     return jsonify(available_numbers)
+
+
+@app.route('/employees/status', methods=['POST'])
+def update_employee_status():
+    """従業員の在籍状況を更新"""
+    data = request.json
+    employee_id = data.get('employee_id')
+    is_active = data.get('is_active')  # 1 or 0
+
+    if employee_id is None or is_active is None:
+        return jsonify({'error': 'パラメータが不足しています'}), 400
+
+    if is_active not in [0, 1]:
+        return jsonify({'error': '不正なステータスです'}), 400
+
+    success = update_employee_active_status(employee_id, is_active)
+
+    if success:
+        status_name = '在籍' if is_active == 1 else '退職'
+        return jsonify({'success': True, 'message': f'ステータスを{status_name}に変更しました'})
+    else:
+        return jsonify({'error': 'ステータス変更に失敗しました'}), 400
 
 
 if __name__ == '__main__':
