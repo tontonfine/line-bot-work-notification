@@ -100,134 +100,106 @@
             </div>
         </div>
 
-        <!-- セクション2: 通知先社員管理 -->
+        <!-- セクション2: 通知先社員管理（勤務地ごと） -->
         <div class="settings-card">
             <div class="settings-card-header">
                 <h5>
                     <span class="icon">👥</span>
-                    通知先社員管理
+                    通知先社員管理（勤務地ごと）
                 </h5>
             </div>
             <div class="settings-card-body">
-                <p class="text-muted mb-3">返信状況を通知する社員を選択してください。選択された社員には返信サマリーが自動送信されます</p>
+                <p class="text-muted mb-3">返信状況を通知する社員を選択してください。勤務地ごとに通知先を設定できます</p>
 
-                <h6 class="mb-3">現在の通知先</h6>
-                <ul class="list-group mb-4">
-                    {% if managers %}
-                        {% for manager in managers %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <strong>{{ manager.name }}</strong>
-                                    <small class="text-muted ms-2">({{ manager.employee_number }})</small>
-                                </span>
-                                <button class="btn btn-sm btn-outline-danger" onclick="removeManager({{ manager.id }})">
-                                    削除
-                                </button>
+                <!-- 全勤務地向け通知先 -->
+                <div class="mb-4">
+                    <h6 class="mb-3">🌐 全勤務地向け通知先</h6>
+                    <ul class="list-group mb-3">
+                        {% set global_managers = managers|selectattr('workplace_id', 'none')|list %}
+                        {% if global_managers %}
+                            {% for manager in global_managers %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <strong>{{ manager.name }}</strong>
+                                    </span>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="removeManager({{ manager.id }})">
+                                        削除
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <li class="list-group-item text-muted text-center py-2">
+                                全勤務地向けの通知先が設定されていません
                             </li>
-                        {% endfor %}
-                    {% else %}
-                        <li class="list-group-item text-muted text-center py-4">
-                            通知先が設定されていません
-                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- 勤務地別通知先 -->
+                {% for workplace in workplaces %}
+                    {% if workplace.is_active %}
+                        <div class="mb-4 pb-3 border-bottom">
+                            <h6 class="mb-3">📍 {{ workplace.name }}</h6>
+                            <ul class="list-group mb-3">
+                                {% set workplace_managers = managers|selectattr('workplace_id', 'equalto', workplace.id)|list %}
+                                {% if workplace_managers %}
+                                    {% for manager in workplace_managers %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <strong>{{ manager.name }}</strong>
+                                            </span>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="removeManager({{ manager.id }})">
+                                                削除
+                                            </button>
+                                        </li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li class="list-group-item text-muted text-center py-2">
+                                        通知先が設定されていません
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
                     {% endif %}
-                </ul>
+                {% endfor %}
 
-                <h6 class="mb-3">社員を追加</h6>
-                <div class="row">
-                    <div class="col-md-8">
-                        <select class="form-select" id="manager_select">
-                            <option value="">社員を選択してください...</option>
-                            {% for emp in full_time %}
-                                <option value="{{ emp.id }}">{{ emp.name }} ({{ emp.employee_number }})</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <button class="btn btn-primary w-100" onclick="addManager()">
-                            追加
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- セクション3: パスワード変更 -->
-        <div class="settings-card">
-            <div class="settings-card-header">
-                <h5>
-                    <span class="icon">🔒</span>
-                    パスワード変更
-                </h5>
-            </div>
-            <div class="settings-card-body">
-                <p class="text-muted mb-3">管理画面へのログインパスワードを変更します</p>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="current_password" class="form-label">現在のパスワード</label>
-                        <input type="password" class="form-control" id="current_password" placeholder="現在のパスワードを入力">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="new_password" class="form-label">新しいパスワード</label>
-                        <input type="password" class="form-control" id="new_password" placeholder="新しいパスワードを入力">
-                    </div>
-                </div>
-                <button class="btn btn-warning" onclick="updatePassword()">
-                    パスワードを変更
-                </button>
-            </div>
-        </div>
-
-        <!-- セクション4: 従業員種別管理（既存機能を保持） -->
-        <div class="settings-card">
-            <div class="settings-card-header">
-                <h5>
-                    <span class="icon">👔</span>
-                    従業員種別管理
-                </h5>
-            </div>
-            <div class="settings-card-body">
-                <p class="text-muted mb-3">従業員をアルバイトまたは社員に分類します。社員は通知先として設定可能になります</p>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>従業員名</th>
-                                <th>従業員番号</th>
-                                <th>種別</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for emp in all_employees %}
-                                <tr>
-                                    <td><strong>{{ emp.name }}</strong></td>
-                                    <td><code>{{ emp.employee_number }}</code></td>
-                                    <td>
-                                        <span class="badge bg-{{ 'primary' if emp.employee_type == 'part_time' else 'secondary' }} rounded-pill">
-                                            {{ 'アルバイト' if emp.employee_type == 'part_time' else '社員' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if emp.employee_type == 'part_time' %}
-                                            <button class="btn btn-sm btn-outline-secondary" onclick="changeEmployeeType({{ emp.id }}, 'full_time')">
-                                                社員に変更
-                                            </button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-outline-primary" onclick="changeEmployeeType({{ emp.id }}, 'part_time')">
-                                                アルバイトに変更
-                                            </button>
+                <!-- 社員追加フォーム -->
+                <div class="card" style="background-color: #f8f9fa;">
+                    <div class="card-body">
+                        <h6 class="mb-3">新しい通知先を追加</h6>
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label class="form-label">社員を選択</label>
+                                <select class="form-select" id="manager_select">
+                                    <option value="">社員を選択してください...</option>
+                                    {% for emp in full_time %}
+                                        <option value="{{ emp.id }}">{{ emp.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">通知対象勤務地</label>
+                                <select class="form-select" id="workplace_select">
+                                    <option value="">🌐 全勤務地</option>
+                                    {% for workplace in workplaces %}
+                                        {% if workplace.is_active %}
+                                            <option value="{{ workplace.id }}">{{ workplace.name }}</option>
                                         {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-primary w-100" onclick="addManager()">
+                                    追加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- セクション5: 勤務場所管理 -->
+        <!-- セクション3: 勤務場所管理 -->
         <div class="settings-card">
             <div class="settings-card-header">
                 <h5>
@@ -309,6 +281,32 @@
                 </div>
             </div>
         </div>
+
+        <!-- セクション4: パスワード変更 -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h5>
+                    <span class="icon">🔒</span>
+                    パスワード変更
+                </h5>
+            </div>
+            <div class="settings-card-body">
+                <p class="text-muted mb-3">管理画面へのログインパスワードを変更します</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="current_password" class="form-label">現在のパスワード</label>
+                        <input type="password" class="form-control" id="current_password" placeholder="現在のパスワードを入力">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="new_password" class="form-label">新しいパスワード</label>
+                        <input type="password" class="form-control" id="new_password" placeholder="新しいパスワードを入力">
+                    </div>
+                </div>
+                <button class="btn btn-warning" onclick="updatePassword()">
+                    パスワードを変更
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -384,21 +382,28 @@
         }
 
         function addManager() {
-            const select = document.getElementById('manager_select');
-            const employeeId = select.value;
+            const employeeId = document.getElementById('manager_select').value;
+            const workplaceId = document.getElementById('workplace_select').value;
 
             if (!employeeId) {
                 alert('社員を選択してください');
                 return;
             }
 
+            const requestBody = {
+                employee_id: employeeId,
+                action: 'add'
+            };
+
+            // workplaceIdが空文字列の場合はnull（全勤務地向け）
+            if (workplaceId) {
+                requestBody.workplace_id = parseInt(workplaceId);
+            }
+
             fetch('/settings/managers', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    employee_id: employeeId,
-                    action: 'add'
-                })
+                body: JSON.stringify(requestBody)
             })
             .then(res => res.json())
             .then(data => {

@@ -88,3 +88,539 @@
 127.0.0.1 - - [14/Oct/2025 18:34:07] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
 127.0.0.1 - - [14/Oct/2025 18:34:07] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
 127.0.0.1 - - [14/Oct/2025 18:34:07] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Oct/2025 18:51:27] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 18:51:32] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:02:32] "[32mGET /settings HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Oct/2025 19:06:33] "[32mGET /settings HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Oct/2025 19:06:33] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:06:33] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Oct/2025 19:06:58] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Oct/2025 19:06:58] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:11:29] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:11:29] "GET /static/css/time-picker.css HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:11:29] "GET /static/js/time-picker.js HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:13:04] "GET /wizard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:13:04] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:13:04] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:13:04] "GET /api/part_time_employees HTTP/1.1" 200 -
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+✅ 送信成功: 2025年10月15日 東京オフィス 09:00 お願いします
+⏰ 遅延返信: kaito - 承知しました！
+⚠️ 通知先社員が設定されていません
+📨 kaitoの遅延返信を通知しました
+❌ 従業員追加エラー: UNIQUE constraint failed: employees.employee_number
+❌ 従業員追加エラー: UNIQUE constraint failed: employees.employee_number
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:61: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+127.0.0.1 - - [14/Oct/2025 19:16:41] "GET /wizard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:16:41] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:16:41] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:16:41] "GET /api/part_time_employees HTTP/1.1" 200 -
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:61: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+127.0.0.1 - - [14/Oct/2025 19:20:25] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:20:25] "GET /api/available_employee_numbers?limit=20 HTTP/1.1" 200 -
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ employees.is_active カラム追加
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+127.0.0.1 - - [14/Oct/2025 19:22:36] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:22:36] "GET /api/available_employee_numbers?limit=20 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:23:00] "POST /employees/status HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:23:06] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:23:06] "GET /api/available_employee_numbers?limit=20 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:23:31] "GET /wizard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:23:31] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:23:31] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:23:31] "GET /api/part_time_employees HTTP/1.1" 200 -
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ workplaces.is_active カラム追加
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+127.0.0.1 - - [14/Oct/2025 19:27:34] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:27:34] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:27:34] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:27:56] "POST /settings/workplaces/add HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:27:58] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:27:58] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:27:58] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:13] "POST /settings/workplaces/add HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:14] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:14] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:14] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:24] "POST /settings/workplaces/add HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:26] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:26] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:26] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:32] "POST /settings/workplaces/delete HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:34] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:34] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:34] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:38] "POST /settings/workplaces/delete HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:38] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:30:38] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:38] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:30:49] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:32:45] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:32:45] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:32:45] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:35:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:35:56] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:01] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:01] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:36:01] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:36:16] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:17] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:17] "GET /api/available_employee_numbers?limit=20 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:24] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:24] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:36:24] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:36:50] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:51] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:36:51] "GET /api/available_employee_numbers?limit=20 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:37:06] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:37:27] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:37:27] "GET /api/available_employee_numbers?limit=20 HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:37:33] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:37:34] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:37:34] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:37:34] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:38:02] "GET / HTTP/1.1" 200 -
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notification_managers.workplace_id カラム追加
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/database.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+ * Detected change in '/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py', reloading
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:63: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:64: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+127.0.0.1 - - [14/Oct/2025 19:43:58] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:43:58] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:43:58] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:44:14] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:44:40] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:44:40] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Oct/2025 19:44:51] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Oct/2025 19:44:51] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 19:44:51] "[36mGET /static/js/time-picker.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 19:44:51] "[36mGET /static/css/time-picker.css HTTP/1.1[0m" 304 -

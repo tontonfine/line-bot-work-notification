@@ -160,6 +160,15 @@ def migrate_database():
         ''')
         print("✅ notification_managers テーブル作成")
 
+        # 5-2. notification_managers に workplace_id カラムを追加
+        cursor.execute("PRAGMA table_info(notification_managers)")
+        columns = [column[1] for column in cursor.fetchall()]
+
+        if 'workplace_id' not in columns:
+            cursor.execute("ALTER TABLE notification_managers ADD COLUMN workplace_id INTEGER")
+            print("✅ notification_managers.workplace_id カラム追加")
+            # 既存データはNULLのままにする（全勤務地向けとして扱う）
+
         # 6. notifications テーブル作成
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS notifications (
@@ -444,25 +453,44 @@ def update_setting(key, value):
 
 # 通知先管理関数
 def get_notification_managers():
-    """通知先社員を取得"""
+    """通知先社員を取得（勤務地情報付き）"""
     conn = get_db_connection()
     managers = conn.execute(
-        '''SELECT e.id, e.name, e.line_user_id, nm.is_active
+        '''SELECT e.id, e.name, e.line_user_id, nm.is_active, nm.workplace_id,
+                  w.name as workplace_name
            FROM notification_managers nm
            JOIN employees e ON nm.employee_id = e.id
+           LEFT JOIN workplaces w ON nm.workplace_id = w.id
            WHERE nm.is_active = 1 AND e.employee_type = 'full_time'
-           ORDER BY e.name'''
+           ORDER BY nm.workplace_id, e.name'''
     ).fetchall()
     conn.close()
     return managers
 
-def add_notification_manager(employee_id):
-    """通知先社員を追加"""
+def get_notification_managers_for_workplace(workplace_name):
+    """特定の勤務地の通知先社員を取得"""
+    conn = get_db_connection()
+    managers = conn.execute(
+        '''SELECT e.id, e.name, e.line_user_id
+           FROM notification_managers nm
+           JOIN employees e ON nm.employee_id = e.id
+           LEFT JOIN workplaces w ON nm.workplace_id = w.id
+           WHERE nm.is_active = 1
+             AND e.employee_type = 'full_time'
+             AND (nm.workplace_id IS NULL OR w.name = ?)
+           ORDER BY e.name''',
+        (workplace_name,)
+    ).fetchall()
+    conn.close()
+    return managers
+
+def add_notification_manager(employee_id, workplace_id=None):
+    """通知先社員を追加（勤務地指定可能）"""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        'INSERT INTO notification_managers (employee_id) VALUES (?)',
-        (employee_id,)
+        'INSERT INTO notification_managers (employee_id, workplace_id) VALUES (?, ?)',
+        (employee_id, workplace_id)
     )
     conn.commit()
     conn.close()

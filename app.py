@@ -386,16 +386,17 @@ def update_password():
 @app.route('/settings/managers', methods=['POST'])
 @require_auth
 def update_managers():
-    """通知先社員を更新"""
+    """通知先社員を更新（勤務地指定可能）"""
     data = request.json
     employee_id = data.get('employee_id')
     action = data.get('action')  # 'add' or 'remove'
+    workplace_id = data.get('workplace_id')  # None の場合は全勤務地向け
 
     if not employee_id or not action:
         return jsonify({'error': 'パラメータが不足しています'}), 400
 
     if action == 'add':
-        add_notification_manager(employee_id)
+        add_notification_manager(employee_id, workplace_id)
         return jsonify({'success': True, 'message': '通知先に追加しました'})
     elif action == 'remove':
         remove_notification_manager(employee_id)
