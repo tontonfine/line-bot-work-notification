@@ -522,6 +522,35 @@ def get_today_schedules_by_reply_status():
     conn.close()
     return schedules
 
+def get_available_employee_numbers(limit=10):
+    """使用可能な従業員番号を取得（k00000形式）"""
+    conn = get_db_connection()
+
+    # 既存の従業員番号を取得（k形式のみ）
+    existing = conn.execute(
+        "SELECT employee_number FROM employees WHERE employee_number LIKE 'k%'"
+    ).fetchall()
+    conn.close()
+
+    # 既存番号を数値に変換
+    used_numbers = set()
+    for row in existing:
+        try:
+            num_part = row['employee_number'][1:]  # 'k'を除去
+            used_numbers.add(int(num_part))
+        except (ValueError, IndexError):
+            continue
+
+    # 使用可能な番号を生成（最小の空き番号から）
+    available = []
+    for i in range(100000):  # k00000 から k99999 まで
+        if i not in used_numbers:
+            available.append(f'k{i:05d}')
+            if len(available) >= limit:
+                break
+
+    return available
+
 if __name__ == '__main__':
     # データベース初期化
     init_db()

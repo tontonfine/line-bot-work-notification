@@ -13,7 +13,8 @@ from database import (
     get_part_time_employees, get_full_time_employees,
     update_employee_type, get_setting, update_setting,
     get_notification_managers, add_notification_manager, remove_notification_manager,
-    update_work_schedule_reply_status, get_latest_pending_schedule
+    update_work_schedule_reply_status, get_latest_pending_schedule,
+    get_available_employee_numbers
 )
 from line_sender import send_bulk_notifications
 from auth import require_auth, login_user, logout_user, change_password, is_authenticated
@@ -437,6 +438,14 @@ def api_full_time_employees():
     """社員一覧API"""
     employees = get_full_time_employees()
     return jsonify([dict(emp) for emp in employees])
+
+
+@app.route('/api/available_employee_numbers')
+def api_available_employee_numbers():
+    """使用可能な従業員番号を取得"""
+    limit = request.args.get('limit', 10, type=int)
+    available_numbers = get_available_employee_numbers(limit)
+    return jsonify(available_numbers)
 
 
 if __name__ == '__main__':
