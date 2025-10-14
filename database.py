@@ -148,6 +148,15 @@ def migrate_database():
             )
             print("✅ 初期設定: admin_password_hash (パスワード: kyoshoran)")
 
+        cursor.execute("SELECT COUNT(*) FROM system_settings WHERE setting_key='employee_mgmt_password_hash'")
+        if cursor.fetchone()[0] == 0:
+            employee_mgmt_hash = hash_password('admin')
+            cursor.execute(
+                "INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?)",
+                ('employee_mgmt_password_hash', employee_mgmt_hash)
+            )
+            print("✅ 初期設定: employee_mgmt_password_hash (パスワード: admin)")
+
         # 5. notification_managers テーブル作成
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS notification_managers (
@@ -300,24 +309,11 @@ def update_workplace(workplace_id, name, sort_order):
         conn.close()
 
 def delete_workplace(workplace_id):
-    """勤務場所を削除（論理削除）"""
+    """勤務場所を削除（物理削除）"""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        'UPDATE workplaces SET is_active = 0 WHERE id = ?',
-        (workplace_id,)
-    )
-    conn.commit()
-    affected = cursor.rowcount
-    conn.close()
-    return affected > 0
-
-def restore_workplace(workplace_id):
-    """勤務場所を復元"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        'UPDATE workplaces SET is_active = 1 WHERE id = ?',
+        'DELETE FROM workplaces WHERE id = ?',
         (workplace_id,)
     )
     conn.commit()
@@ -422,6 +418,44 @@ def get_schedules_with_reply_status(limit=50):
            LIMIT ?''',
         (limit,)
     ).fetchall()
+    conn.close()
+    return schedules
+
+def get_filtered_schedules(work_date=None, workplace=None, limit=100):
+    """送信履歴をフィルタリングして取得（日付・勤務地）"""
+    conn = get_db_connection()
+
+    query = '''SELECT
+               ws.*,
+               e.name as employee_name,
+               r.id as reply_id,
+               r.message_text as reply_text,
+               r.replied_at
+           FROM work_schedules ws
+           JOIN employees e ON ws.employee_id = e.id
+           LEFT JOIN replies r ON r.id = (
+               SELECT id FROM replies
+               WHERE employee_id = ws.employee_id
+                 AND replied_at >= ws.sent_at
+               ORDER BY replied_at ASC
+               LIMIT 1
+           )
+           WHERE 1=1'''
+
+    params = []
+
+    if work_date:
+        query += ' AND ws.work_date = ?'
+        params.append(work_date)
+
+    if workplace:
+        query += ' AND ws.workplace = ?'
+        params.append(workplace)
+
+    query += ' ORDER BY ws.sent_at DESC LIMIT ?'
+    params.append(limit)
+
+    schedules = conn.execute(query, tuple(params)).fetchall()
     conn.close()
     return schedules
 

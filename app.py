@@ -15,7 +15,8 @@ from database import (
     get_notification_managers, add_notification_manager, remove_notification_manager,
     update_work_schedule_reply_status, get_latest_pending_schedule,
     get_available_employee_numbers, get_active_employees, update_employee_active_status,
-    get_active_workplaces, add_workplace, update_workplace, delete_workplace, restore_workplace
+    get_active_workplaces, add_workplace, update_workplace, delete_workplace,
+    get_filtered_schedules
 )
 from line_sender import send_bulk_notifications
 from auth import require_auth, login_user, logout_user, change_password, is_authenticated
@@ -128,7 +129,7 @@ def send_notifications():
 
 @app.route('/wizard/send', methods=['POST'])
 def wizard_send_notifications():
-    """ウィザード専用送信（履歴保存なし）"""
+    """ウィザード送信（履歴保存あり）"""
     data = request.json
 
     # 送信データの検証
@@ -139,14 +140,29 @@ def wizard_send_notifications():
     if not notifications:
         return jsonify({'error': '送信対象が選択されていません'}), 400
 
-    # 送信実行（データベース記録なし）
+    # 送信実行
     results = send_bulk_notifications(notifications)
+
+    # データベースに記録（送信成功したもののみ）
+    recorded_count = 0
+    for i, notification in enumerate(notifications):
+        if notification.get('employee_id'):
+            # 対応する送信結果を確認
+            if i < len(results['results']) and results['results'][i]['success']:
+                add_work_schedule(
+                    employee_id=notification['employee_id'],
+                    work_date=notification['work_date'],
+                    workplace=notification['workplace'],
+                    work_time=notification['work_time']
+                )
+                recorded_count += 1
 
     return jsonify({
         'success': True,
         'sent_count': results['success'],
         'failed_count': results['failed'],
-        'message': f'{results["success"]}件送信しました（履歴には保存されません）'
+        'recorded_count': recorded_count,
+        'message': f'{results["success"]}件送信しました（履歴記録: {recorded_count}件）'
     })
 
 
@@ -165,14 +181,22 @@ def wizard():
 
 @app.route('/employees')
 def employees_list():
-    """従業員一覧"""
+    """従業員一覧（パスワード認証必要）"""
+    # 従業員管理パスワードのチェック
+    if not session.get('employee_mgmt_authenticated'):
+        return redirect(url_for('employee_login'))
+
     employees = get_all_employees()
-    return render_template('employees.html', employees=employees)
+    return render_template('employees.html', employees=employees, liff_id=LIFF_ID)
 
 
 @app.route('/employees/add', methods=['POST'])
 def add_employee_route():
     """従業員を手動追加（管理用）"""
+    # 認証チェック
+    if not session.get('employee_mgmt_authenticated'):
+        return jsonify({'error': '認証が必要です'}), 401
+
     data = request.json
     name = data.get('name')
     employee_number = data.get('employee_number')
@@ -297,6 +321,16 @@ def api_workplaces():
     return jsonify([dict(wp) for wp in workplaces])
 
 
+@app.route('/api/work_schedules')
+def api_work_schedules():
+    """送信履歴取得API（フィルター対応）"""
+    work_date = request.args.get('date')  # YYYY年MM月DD日 形式
+    workplace = request.args.get('workplace')
+
+    schedules = get_filtered_schedules(work_date, workplace)
+    return jsonify([dict(schedule) for schedule in schedules])
+
+
 # ========== 認証関連 ==========
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -320,6 +354,31 @@ def logout():
     """ログアウト"""
     logout_user()
     flash('ログアウトしました', 'info')
+    return redirect(url_for('index'))
+
+
+@app.route('/employees/login', methods=['GET', 'POST'])
+def employee_login():
+    """従業員管理ログイン"""
+    if request.method == 'POST':
+        password = request.form.get('password')
+        stored_hash = get_setting('employee_mgmt_password_hash')
+
+        from database import check_password
+        if stored_hash and check_password(password, stored_hash):
+            session['employee_mgmt_authenticated'] = True
+            return redirect(url_for('employees_list'))
+        else:
+            flash('パスワードが正しくありません', 'error')
+
+    return render_template('employee_login.html')
+
+
+@app.route('/employees/logout')
+def employee_logout():
+    """従業員管理ログアウト"""
+    session.pop('employee_mgmt_authenticated', None)
+    flash('従業員管理からログアウトしました', 'info')
     return redirect(url_for('index'))
 
 
@@ -383,6 +442,31 @@ def update_password():
         return jsonify({'error': message}), 400
 
 
+@app.route('/settings/employee_password', methods=['POST'])
+@require_auth
+def update_employee_password():
+    """従業員管理パスワードを変更"""
+    from database import hash_password, check_password
+
+    data = request.json
+    current = data.get('current_password')
+    new = data.get('new_password')
+
+    if not current or not new:
+        return jsonify({'error': 'パスワードを入力してください'}), 400
+
+    # 現在のパスワードを確認
+    stored_hash = get_setting('employee_mgmt_password_hash')
+    if not stored_hash or not check_password(current, stored_hash):
+        return jsonify({'error': '現在のパスワードが正しくありません'}), 400
+
+    # 新しいパスワードをハッシュ化して保存
+    new_hash = hash_password(new)
+    update_setting('employee_mgmt_password_hash', new_hash)
+
+    return jsonify({'success': True, 'message': '従業員管理パスワードを変更しました'})
+
+
 @app.route('/settings/managers', methods=['POST'])
 @require_auth
 def update_managers():
@@ -408,9 +492,12 @@ def update_managers():
 # ========== 従業員管理 ==========
 
 @app.route('/employees/type', methods=['POST'])
-@require_auth
 def update_employee_type_route():
     """従業員種別を変更（アルバイト⇔社員）"""
+    # 認証チェック
+    if not session.get('employee_mgmt_authenticated'):
+        return jsonify({'error': '認証が必要です'}), 401
+
     data = request.json
     employee_id = data.get('employee_id')
     employee_type = data.get('employee_type')  # 'part_time' or 'full_time'
@@ -455,6 +542,10 @@ def api_available_employee_numbers():
 @app.route('/employees/status', methods=['POST'])
 def update_employee_status():
     """従業員の在籍状況を更新"""
+    # 認証チェック
+    if not session.get('employee_mgmt_authenticated'):
+        return jsonify({'error': '認証が必要です'}), 401
+
     data = request.json
     employee_id = data.get('employee_id')
     is_active = data.get('is_active')  # 1 or 0
@@ -518,7 +609,7 @@ def update_workplace_route():
 @app.route('/settings/workplaces/delete', methods=['POST'])
 @require_auth
 def delete_workplace_route():
-    """勤務場所を削除（論理削除）"""
+    """勤務場所を削除（物理削除）"""
     data = request.json
     workplace_id = data.get('workplace_id')
 
@@ -528,27 +619,9 @@ def delete_workplace_route():
     success = delete_workplace(workplace_id)
 
     if success:
-        return jsonify({'success': True, 'message': '勤務場所を削除しました'})
+        return jsonify({'success': True, 'message': '勤務場所を完全に削除しました'})
     else:
         return jsonify({'error': '勤務場所の削除に失敗しました'}), 400
-
-
-@app.route('/settings/workplaces/restore', methods=['POST'])
-@require_auth
-def restore_workplace_route():
-    """勤務場所を復元"""
-    data = request.json
-    workplace_id = data.get('workplace_id')
-
-    if not workplace_id:
-        return jsonify({'error': 'パラメータが不足しています'}), 400
-
-    success = restore_workplace(workplace_id)
-
-    if success:
-        return jsonify({'success': True, 'message': '勤務場所を復元しました'})
-    else:
-        return jsonify({'error': '勤務場所の復元に失敗しました'}), 400
 
 
 if __name__ == '__main__':

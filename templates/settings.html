@@ -208,7 +208,7 @@
                 </h5>
             </div>
             <div class="settings-card-body">
-                <p class="text-muted mb-3">勤務場所の追加・編集・削除を行います。削除した場所は復元することもできます</p>
+                <p class="text-muted mb-3">勤務場所の追加・編集・削除を行います。削除は完全削除です（復元不可）</p>
 
                 <!-- 追加フォーム -->
                 <div class="card mb-4" style="background-color: #f8f9fa;">
@@ -241,40 +241,30 @@
                                 <th>ID</th>
                                 <th>勤務場所名</th>
                                 <th>表示順序</th>
-                                <th>状態</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody id="workplaceTableBody">
                             {% for wp in workplaces %}
-                                <tr id="wp-row-{{ wp.id }}" {% if not wp.is_active %}style="opacity: 0.5; background-color: #f8f9fa;"{% endif %}>
+                                {% if wp.is_active %}
+                                <tr id="wp-row-{{ wp.id }}">
                                     <td>{{ wp.id }}</td>
                                     <td>
-                                        <input type="text" class="form-control form-control-sm" id="wp-name-{{ wp.id }}" value="{{ wp.name }}" {% if not wp.is_active %}disabled{% endif %}>
+                                        <input type="text" class="form-control form-control-sm" id="wp-name-{{ wp.id }}" value="{{ wp.name }}">
                                     </td>
                                     <td>
-                                        <input type="number" class="form-control form-control-sm" id="wp-order-{{ wp.id }}" value="{{ wp.sort_order }}" min="0" style="width: 100px;" {% if not wp.is_active %}disabled{% endif %}>
+                                        <input type="number" class="form-control form-control-sm" id="wp-order-{{ wp.id }}" value="{{ wp.sort_order }}" min="0" style="width: 100px;">
                                     </td>
                                     <td>
-                                        <span class="badge bg-{{ 'success' if wp.is_active else 'secondary' }}">
-                                            {{ '有効' if wp.is_active else '削除済み' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if wp.is_active %}
-                                            <button class="btn btn-sm btn-primary me-1" onclick="updateWorkplace({{ wp.id }})">
-                                                保存
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="deleteWorkplace({{ wp.id }})">
-                                                削除
-                                            </button>
-                                        {% else %}
-                                            <button class="btn btn-sm btn-success" onclick="restoreWorkplace({{ wp.id }})">
-                                                復元
-                                            </button>
-                                        {% endif %}
+                                        <button class="btn btn-sm btn-primary me-1" onclick="updateWorkplace({{ wp.id }})">
+                                            保存
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteWorkplace({{ wp.id }})">
+                                            削除
+                                        </button>
                                     </td>
                                 </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
@@ -303,6 +293,32 @@
                     </div>
                 </div>
                 <button class="btn btn-warning" onclick="updatePassword()">
+                    パスワードを変更
+                </button>
+            </div>
+        </div>
+
+        <!-- セクション5: 従業員管理パスワード変更 -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h5>
+                    <span class="icon">👥</span>
+                    従業員管理パスワード変更
+                </h5>
+            </div>
+            <div class="settings-card-body">
+                <p class="text-muted mb-3">従業員管理画面へのアクセスパスワードを変更します</p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="emp_current_password" class="form-label">現在のパスワード</label>
+                        <input type="password" class="form-control" id="emp_current_password" placeholder="現在のパスワードを入力">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="emp_new_password" class="form-label">新しいパスワード</label>
+                        <input type="password" class="form-control" id="emp_new_password" placeholder="新しいパスワードを入力">
+                    </div>
+                </div>
+                <button class="btn btn-warning" onclick="updateEmployeePassword()">
                     パスワードを変更
                 </button>
             </div>
@@ -375,6 +391,35 @@
                     alert(data.message);
                     document.getElementById('current_password').value = '';
                     document.getElementById('new_password').value = '';
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function updateEmployeePassword() {
+            const current = document.getElementById('emp_current_password').value;
+            const newPass = document.getElementById('emp_new_password').value;
+
+            if (!current || !newPass) {
+                alert('パスワードを入力してください');
+                return;
+            }
+
+            fetch('/settings/employee_password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    current_password: current,
+                    new_password: newPass
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('emp_current_password').value = '';
+                    document.getElementById('emp_new_password').value = '';
                 } else {
                     alert('エラー: ' + data.error);
                 }
@@ -526,32 +571,11 @@
         }
 
         function deleteWorkplace(workplaceId) {
-            if (!confirm('この勤務場所を削除しますか？\n（削除後も復元できます）')) {
+            if (!confirm('この勤務場所を完全に削除しますか？\n⚠️ 削除後は復元できません。')) {
                 return;
             }
 
             fetch('/settings/workplaces/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({workplace_id: workplaceId})
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('エラー: ' + data.error);
-                }
-            });
-        }
-
-        function restoreWorkplace(workplaceId) {
-            if (!confirm('この勤務場所を復元しますか？')) {
-                return;
-            }
-
-            fetch('/settings/workplaces/restore', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({workplace_id: workplaceId})

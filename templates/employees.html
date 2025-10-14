@@ -109,6 +109,22 @@
                 </div>
             </div>
         </div>
+
+        <!-- LIFF登録案内 -->
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">📢 従業員の皆様へ</h5>
+            </div>
+            <div class="card-body">
+                <p>勤務連絡を受け取るには、LINE公式アカウントを友だち追加後、以下のURLから登録してください：</p>
+                <div class="input-group">
+                    <input type="text" class="form-control" value="https://liff.line.me/{{ liff_id }}" readonly id="liffUrl">
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyLiffUrl()">
+                        📋 コピー
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -215,6 +231,14 @@
             } catch (error) {
                 alert(`❌ 種別変更に失敗しました: ${error.message}`);
             }
+        }
+
+        // LIFF URLをコピー
+        function copyLiffUrl() {
+            const input = document.getElementById('liffUrl');
+            input.select();
+            document.execCommand('copy');
+            alert('✅ URLをコピーしました');
         }
 
         // ページロード時に実行

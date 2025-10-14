@@ -5,36 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>勤務連絡送信システム</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/time-picker.css') }}" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .wizard-step {
+            display: none;
         }
-        .main-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 3rem;
-            max-width: 800px;
-            width: 100%;
+        .wizard-step.active {
+            display: block;
         }
-        .wizard-btn {
-            padding: 1.5rem 3rem;
-            font-size: 1.5rem;
-            border-radius: 50px;
+        .progress-bar-custom {
+            height: 30px;
+            font-size: 16px;
+        }
+        .employee-card {
+            cursor: pointer;
             transition: all 0.3s;
         }
-        .wizard-btn:hover {
+        .employee-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(13, 110, 253, 0.4);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .employee-card.selected {
+            border: 3px solid #0d6efd;
+            background-color: #e7f1ff;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-primary position-fixed w-100 top-0" style="z-index: 1000;">
+    <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">📱 勤務連絡送信システム</span>
             <div>
@@ -43,83 +41,415 @@
         </div>
     </nav>
 
-    <div class="container" style="margin-top: 80px;">
-        <div class="main-card text-center">
-            <h1 class="display-4 mb-4">🧙 勤務連絡送信ウィザード</h1>
-            <p class="lead text-muted mb-5">
-                ステップごとに簡単に勤務連絡を送信できます
-            </p>
-
-            <a href="{{ url_for('wizard') }}" class="btn btn-primary wizard-btn mb-4">
-                📨 ウィザードで送信する →
-            </a>
-
-            <hr class="my-5">
-
-            <!-- LIFF登録案内 -->
-            <div class="alert alert-info text-start" role="alert">
-                <h5>📢 従業員の皆様へ</h5>
-                <p>勤務連絡を受け取るには、LINE公式アカウントを友だち追加後、以下のURLから登録してください：</p>
-                <div class="input-group">
-                    <input type="text" class="form-control" value="https://liff.line.me/{{ liff_id }}" readonly id="liffUrl">
-                    <button class="btn btn-outline-secondary" type="button" onclick="copyLiffUrl()">
-                        📋 コピー
-                    </button>
+    <div class="container mt-4">
+        <!-- Progress Bar -->
+        <div class="mb-4">
+            <div class="progress">
+                <div class="progress-bar progress-bar-custom" id="progressBar" role="progressbar" style="width: 25%;">
+                    ステップ 1/4
                 </div>
             </div>
+        </div>
 
-            <!-- 送信履歴 -->
-            <div class="card mt-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0 text-start">📋 最近の送信履歴</h5>
+        <!-- Step 1: Date and Workplace -->
+        <div class="wizard-step active" id="step1">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>ステップ1: 勤務日と勤務場所を選択</h4>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                                <tr>
-                                    <th>送信日時</th>
-                                    <th>従業員名</th>
-                                    <th>勤務日</th>
-                                    <th>勤務場所</th>
-                                    <th>出勤時間</th>
-                                    <th>返信状況</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for schedule in recent_schedules %}
-                                <tr>
-                                    <td><small>{{ schedule.sent_at }}</small></td>
-                                    <td>{{ schedule.employee_name }}</td>
-                                    <td>{{ schedule.work_date }}</td>
-                                    <td>{{ schedule.workplace }}</td>
-                                    <td>{{ schedule.work_time }}</td>
-                                    <td>
-                                        {% if schedule.reply_id %}
-                                            <span class="badge bg-success">✓ 返信済み</span>
-                                            <br><small class="text-muted">{{ schedule.reply_text[:20] }}...</small>
-                                        {% else %}
-                                            <span class="badge bg-secondary">未返信</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="mb-3">
+                        <label for="work_date" class="form-label">勤務日</label>
+                        <input type="date" class="form-control form-control-lg" id="work_date" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="workplace" class="form-label">勤務場所</label>
+                        <select class="form-select form-select-lg" id="workplace" required>
+                            <option value="">選択してください...</option>
+                            {% for wp in workplaces %}
+                                <option value="{{ wp.name }}">{{ wp.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-lg w-100" onclick="goToStep(2)">次へ →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Select Employees -->
+        <div class="wizard-step" id="step2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>ステップ2: アルバイトスタッフを選択</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">送信するスタッフをクリックして選択してください</p>
+                    <div class="row" id="employeeList">
+                        <!-- Employee cards will be loaded here -->
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-secondary btn-lg" onclick="goToStep(1)">← 戻る</button>
+                        <button class="btn btn-primary btn-lg flex-grow-1" onclick="goToStep(3)">次へ →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Set Work Times -->
+        <div class="wizard-step" id="step3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>ステップ3: 出勤時間を設定</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">各スタッフの出勤時間を設定してください（15分単位）</p>
+                    <div id="timeSelectors">
+                        <!-- Time selectors will be loaded here -->
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-secondary btn-lg" onclick="goToStep(2)">← 戻る</button>
+                        <button class="btn btn-primary btn-lg flex-grow-1" onclick="goToStep(4)">確認画面へ →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Confirmation -->
+        <div class="wizard-step" id="step4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>ステップ4: 送信内容の確認</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <strong>勤務日:</strong> <span id="confirm_date"></span><br>
+                        <strong>勤務場所:</strong> <span id="confirm_workplace"></span>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>スタッフ名</th>
+                                <th>出勤時間</th>
+                            </tr>
+                        </thead>
+                        <tbody id="confirmTable">
+                            <!-- Confirmation rows will be loaded here -->
+                        </tbody>
+                    </table>
+                    <div class="mt-4 d-flex gap-2">
+                        <button class="btn btn-secondary btn-lg" onclick="goToStep(3)">← 戻る</button>
+                        <button class="btn btn-success btn-lg flex-grow-1" onclick="sendNotifications()">📨 送信する</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 送信履歴 -->
+        <div class="card mt-5">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">📋 送信履歴</h5>
+            </div>
+            <div class="card-body">
+                <!-- フィルター -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">勤務日でフィルター</label>
+                        <input type="date" class="form-control" id="filter_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">勤務地でフィルター</label>
+                        <select class="form-select" id="filter_workplace">
+                            <option value="">すべての勤務地</option>
+                            {% for wp in workplaces %}
+                                <option value="{{ wp.name }}">{{ wp.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="filterHistory()">🔍 検索</button>
+                    </div>
+                </div>
+
+                <!-- 履歴テーブル -->
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>送信日時</th>
+                                <th>従業員名</th>
+                                <th>勤務日</th>
+                                <th>勤務場所</th>
+                                <th>出勤時間</th>
+                                <th>返信状況</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable">
+                            {% for schedule in recent_schedules %}
+                            <tr>
+                                <td><small>{{ schedule.sent_at }}</small></td>
+                                <td>{{ schedule.employee_name }}</td>
+                                <td>{{ schedule.work_date }}</td>
+                                <td>{{ schedule.workplace }}</td>
+                                <td>{{ schedule.work_time }}</td>
+                                <td>
+                                    {% if schedule.reply_id %}
+                                        <span class="badge bg-success">✓ 返信済み</span>
+                                        <br><small class="text-muted">{{ schedule.reply_text[:20] }}...</small>
+                                    {% else %}
+                                        <span class="badge bg-secondary">未返信</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/time-picker.js') }}"></script>
     <script>
-        function copyLiffUrl() {
-            const input = document.getElementById('liffUrl');
-            input.select();
-            document.execCommand('copy');
-            alert('✅ URLをコピーしました');
+        let currentStep = 1;
+        let selectedEmployees = new Set();
+        let employeeData = {};
+        let workTimes = {};
+        let timePickers = {};
+
+        // Load part-time employees
+        async function loadEmployees() {
+            const response = await fetch('/api/part_time_employees');
+            const employees = await response.json();
+
+            const employeeList = document.getElementById('employeeList');
+            employeeList.innerHTML = '';
+
+            employees.forEach(emp => {
+                employeeData[emp.id] = emp;
+                const card = document.createElement('div');
+                card.className = 'col-md-4 mb-3';
+                card.innerHTML = `
+                    <div class="card employee-card" onclick="toggleEmployee(${emp.id})">
+                        <div class="card-body text-center">
+                            <h5>${emp.name}</h5>
+                            <small class="text-muted">${emp.employee_number}</small>
+                            ${emp.line_user_id ? '<span class="badge bg-success">登録済み</span>' : '<span class="badge bg-warning">未登録</span>'}
+                        </div>
+                    </div>
+                `;
+                employeeList.appendChild(card);
+            });
         }
+
+        function toggleEmployee(empId) {
+            const card = event.currentTarget;
+            if (selectedEmployees.has(empId)) {
+                selectedEmployees.delete(empId);
+                card.classList.remove('selected');
+            } else {
+                selectedEmployees.add(empId);
+                card.classList.add('selected');
+            }
+        }
+
+        function goToStep(step) {
+            // Validation
+            if (step === 2 && currentStep === 1) {
+                const date = document.getElementById('work_date').value;
+                const workplace = document.getElementById('workplace').value;
+                if (!date || !workplace) {
+                    alert('勤務日と勤務場所を選択してください');
+                    return;
+                }
+            }
+
+            if (step === 3 && currentStep === 2) {
+                if (selectedEmployees.size === 0) {
+                    alert('少なくとも1人のスタッフを選択してください');
+                    return;
+                }
+                loadTimeSelectors();
+            }
+
+            if (step === 4 && currentStep === 3) {
+                loadConfirmation();
+            }
+
+            // Hide current step
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+
+            // Show next step
+            currentStep = step;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            // Update progress bar
+            const percentage = (step / 4) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = `ステップ ${step}/4`;
+        }
+
+        function loadTimeSelectors() {
+            const container = document.getElementById('timeSelectors');
+            container.innerHTML = '';
+
+            selectedEmployees.forEach(empId => {
+                const emp = employeeData[empId];
+                if (!workTimes[empId]) {
+                    workTimes[empId] = '09:00';
+                }
+
+                const div = document.createElement('div');
+                div.className = 'card mb-3';
+                div.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="mb-3">${emp.name} <small class="text-muted">(${emp.employee_number})</small></h5>
+                        <div id="time_picker_${empId}"></div>
+                    </div>
+                `;
+                container.appendChild(div);
+
+                // TimePickerを初期化
+                setTimeout(() => {
+                    const [hour, minute] = workTimes[empId].split(':').map(Number);
+                    timePickers[empId] = new TimePicker(`time_picker_${empId}`, {
+                        defaultHour: hour,
+                        defaultMinute: minute,
+                        minuteStep: 15,
+                        allowCustomMinute: true,
+                        onChange: function(time) {
+                            workTimes[empId] = time.formatted;
+                        }
+                    });
+                }, 100);
+            });
+        }
+
+        function loadConfirmation() {
+            const date = document.getElementById('work_date').value;
+            const workplace = document.getElementById('workplace').value;
+
+            // Format date to Japanese
+            const dateObj = new Date(date);
+            const formattedDate = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+
+            document.getElementById('confirm_date').textContent = formattedDate;
+            document.getElementById('confirm_workplace').textContent = workplace;
+
+            const table = document.getElementById('confirmTable');
+            table.innerHTML = '';
+
+            selectedEmployees.forEach(empId => {
+                const emp = employeeData[empId];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${emp.name}</td>
+                    <td><strong>${workTimes[empId]}</strong></td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        async function sendNotifications() {
+            const date = document.getElementById('work_date').value;
+            const workplace = document.getElementById('workplace').value;
+            const dateObj = new Date(date);
+            const formattedDate = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+
+            const notifications = [];
+            selectedEmployees.forEach(empId => {
+                const emp = employeeData[empId];
+                if (emp.line_user_id) {
+                    notifications.push({
+                        employee_id: empId,
+                        line_user_id: emp.line_user_id,
+                        work_date: formattedDate,
+                        workplace: workplace,
+                        work_time: workTimes[empId]
+                    });
+                }
+            });
+
+            if (notifications.length === 0) {
+                alert('送信可能なスタッフがいません（LINE未登録）');
+                return;
+            }
+
+            if (!confirm(`${notifications.length}件の勤務連絡を送信します。よろしいですか？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/wizard/send', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({notifications: notifications})
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ ${result.message}`);
+                    location.reload();
+                } else {
+                    alert(`❌ エラー: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`❌ 送信エラー: ${error.message}`);
+            }
+        }
+
+        async function filterHistory() {
+            const filterDate = document.getElementById('filter_date').value;
+            const filterWorkplace = document.getElementById('filter_workplace').value;
+
+            try {
+                const params = new URLSearchParams();
+                if (filterDate) params.append('date', filterDate);
+                if (filterWorkplace) params.append('workplace', filterWorkplace);
+
+                const response = await fetch(`/api/work_schedules?${params.toString()}`);
+                const schedules = await response.json();
+
+                const tbody = document.getElementById('historyTable');
+                tbody.innerHTML = '';
+
+                if (schedules.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">該当する履歴がありません</td></tr>';
+                    return;
+                }
+
+                schedules.forEach(schedule => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><small>${schedule.sent_at}</small></td>
+                        <td>${schedule.employee_name}</td>
+                        <td>${schedule.work_date}</td>
+                        <td>${schedule.workplace}</td>
+                        <td>${schedule.work_time}</td>
+                        <td>
+                            ${schedule.reply_id
+                                ? `<span class="badge bg-success">✓ 返信済み</span><br><small class="text-muted">${schedule.reply_text ? schedule.reply_text.substring(0, 20) + '...' : ''}</small>`
+                                : '<span class="badge bg-secondary">未返信</span>'
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                alert(`❌ 履歴の取得に失敗しました: ${error.message}`);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEmployees();
+
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('work_date').value = today;
+        });
     </script>
 </body>
 </html>
