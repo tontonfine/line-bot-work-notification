@@ -226,6 +226,89 @@
                 </div>
             </div>
         </div>
+
+        <!-- セクション5: 勤務場所管理 -->
+        <div class="settings-card">
+            <div class="settings-card-header">
+                <h5>
+                    <span class="icon">🏢</span>
+                    勤務場所管理
+                </h5>
+            </div>
+            <div class="settings-card-body">
+                <p class="text-muted mb-3">勤務場所の追加・編集・削除を行います。削除した場所は復元することもできます</p>
+
+                <!-- 追加フォーム -->
+                <div class="card mb-4" style="background-color: #f8f9fa;">
+                    <div class="card-body">
+                        <h6 class="mb-3">新しい勤務場所を追加</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">勤務場所名</label>
+                                <input type="text" class="form-control" id="new_workplace_name" placeholder="例: 横浜オフィス">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">表示順序</label>
+                                <input type="number" class="form-control" id="new_workplace_order" value="999" min="0">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-success w-100" onclick="addWorkplace()">
+                                    ➕ 追加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 勤務場所一覧 -->
+                <h6 class="mb-3">現在の勤務場所</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>勤務場所名</th>
+                                <th>表示順序</th>
+                                <th>状態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workplaceTableBody">
+                            {% for wp in workplaces %}
+                                <tr id="wp-row-{{ wp.id }}" {% if not wp.is_active %}style="opacity: 0.5; background-color: #f8f9fa;"{% endif %}>
+                                    <td>{{ wp.id }}</td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm" id="wp-name-{{ wp.id }}" value="{{ wp.name }}" {% if not wp.is_active %}disabled{% endif %}>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm" id="wp-order-{{ wp.id }}" value="{{ wp.sort_order }}" min="0" style="width: 100px;" {% if not wp.is_active %}disabled{% endif %}>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if wp.is_active else 'secondary' }}">
+                                            {{ '有効' if wp.is_active else '削除済み' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if wp.is_active %}
+                                            <button class="btn btn-sm btn-primary me-1" onclick="updateWorkplace({{ wp.id }})">
+                                                保存
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteWorkplace({{ wp.id }})">
+                                                削除
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-success" onclick="restoreWorkplace({{ wp.id }})">
+                                                復元
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -366,6 +449,107 @@
                     employee_id: employeeId,
                     employee_type: newType
                 })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        // ========== 勤務場所管理 ==========
+
+        function addWorkplace() {
+            const name = document.getElementById('new_workplace_name').value.trim();
+            const order = document.getElementById('new_workplace_order').value;
+
+            if (!name) {
+                alert('勤務場所名を入力してください');
+                return;
+            }
+
+            fetch('/settings/workplaces/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: name,
+                    sort_order: parseInt(order)
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function updateWorkplace(workplaceId) {
+            const name = document.getElementById(`wp-name-${workplaceId}`).value.trim();
+            const order = document.getElementById(`wp-order-${workplaceId}`).value;
+
+            if (!name) {
+                alert('勤務場所名を入力してください');
+                return;
+            }
+
+            fetch('/settings/workplaces/update', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    workplace_id: workplaceId,
+                    name: name,
+                    sort_order: parseInt(order)
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function deleteWorkplace(workplaceId) {
+            if (!confirm('この勤務場所を削除しますか？\n（削除後も復元できます）')) {
+                return;
+            }
+
+            fetch('/settings/workplaces/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({workplace_id: workplaceId})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function restoreWorkplace(workplaceId) {
+            if (!confirm('この勤務場所を復元しますか？')) {
+                return;
+            }
+
+            fetch('/settings/workplaces/restore', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({workplace_id: workplaceId})
             })
             .then(res => res.json())
             .then(data => {

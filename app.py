@@ -14,7 +14,8 @@ from database import (
     update_employee_type, get_setting, update_setting,
     get_notification_managers, add_notification_manager, remove_notification_manager,
     update_work_schedule_reply_status, get_latest_pending_schedule,
-    get_available_employee_numbers, get_active_employees, update_employee_active_status
+    get_available_employee_numbers, get_active_employees, update_employee_active_status,
+    get_active_workplaces, add_workplace, update_workplace, delete_workplace, restore_workplace
 )
 from line_sender import send_bulk_notifications
 from auth import require_auth, login_user, logout_user, change_password, is_authenticated
@@ -158,7 +159,7 @@ def register_page():
 @app.route('/wizard')
 def wizard():
     """ウィザード形式の送信画面"""
-    workplaces = get_all_workplaces()
+    workplaces = get_active_workplaces()
     return render_template('wizard.html', workplaces=workplaces)
 
 
@@ -332,13 +333,15 @@ def settings():
     managers = get_notification_managers()
     all_employees = get_all_employees()
     full_time = get_full_time_employees()
+    workplaces = get_all_workplaces()
 
     return render_template(
         'settings.html',
         deadline_time=deadline_time,
         managers=managers,
         all_employees=all_employees,
-        full_time=full_time
+        full_time=full_time,
+        workplaces=workplaces
     )
 
 
@@ -468,6 +471,83 @@ def update_employee_status():
         return jsonify({'success': True, 'message': f'ステータスを{status_name}に変更しました'})
     else:
         return jsonify({'error': 'ステータス変更に失敗しました'}), 400
+
+
+# ========== 勤務場所管理 ==========
+
+@app.route('/settings/workplaces/add', methods=['POST'])
+@require_auth
+def add_workplace_route():
+    """勤務場所を追加"""
+    data = request.json
+    name = data.get('name')
+    sort_order = data.get('sort_order', 999)
+
+    if not name:
+        return jsonify({'error': '勤務場所名は必須です'}), 400
+
+    workplace_id = add_workplace(name, sort_order)
+
+    if workplace_id:
+        return jsonify({'success': True, 'workplace_id': workplace_id, 'message': '勤務場所を追加しました'})
+    else:
+        return jsonify({'error': '勤務場所の追加に失敗しました（重複の可能性）'}), 400
+
+
+@app.route('/settings/workplaces/update', methods=['POST'])
+@require_auth
+def update_workplace_route():
+    """勤務場所を更新"""
+    data = request.json
+    workplace_id = data.get('workplace_id')
+    name = data.get('name')
+    sort_order = data.get('sort_order')
+
+    if not workplace_id or not name or sort_order is None:
+        return jsonify({'error': 'パラメータが不足しています'}), 400
+
+    success = update_workplace(workplace_id, name, sort_order)
+
+    if success:
+        return jsonify({'success': True, 'message': '勤務場所を更新しました'})
+    else:
+        return jsonify({'error': '勤務場所の更新に失敗しました'}), 400
+
+
+@app.route('/settings/workplaces/delete', methods=['POST'])
+@require_auth
+def delete_workplace_route():
+    """勤務場所を削除（論理削除）"""
+    data = request.json
+    workplace_id = data.get('workplace_id')
+
+    if not workplace_id:
+        return jsonify({'error': 'パラメータが不足しています'}), 400
+
+    success = delete_workplace(workplace_id)
+
+    if success:
+        return jsonify({'success': True, 'message': '勤務場所を削除しました'})
+    else:
+        return jsonify({'error': '勤務場所の削除に失敗しました'}), 400
+
+
+@app.route('/settings/workplaces/restore', methods=['POST'])
+@require_auth
+def restore_workplace_route():
+    """勤務場所を復元"""
+    data = request.json
+    workplace_id = data.get('workplace_id')
+
+    if not workplace_id:
+        return jsonify({'error': 'パラメータが不足しています'}), 400
+
+    success = restore_workplace(workplace_id)
+
+    if success:
+        return jsonify({'success': True, 'message': '勤務場所を復元しました'})
+    else:
+        return jsonify({'error': '勤務場所の復元に失敗しました'}), 400
 
 
 if __name__ == '__main__':

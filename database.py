@@ -87,6 +87,14 @@ def migrate_database():
             cursor.execute("ALTER TABLE employees ADD COLUMN is_active INTEGER DEFAULT 1")
             print("✅ employees.is_active カラム追加")
 
+        # 1-2. workplaces テーブルに is_active カラムを追加
+        cursor.execute("PRAGMA table_info(workplaces)")
+        columns = [column[1] for column in cursor.fetchall()]
+
+        if 'is_active' not in columns:
+            cursor.execute("ALTER TABLE workplaces ADD COLUMN is_active INTEGER DEFAULT 1")
+            print("✅ workplaces.is_active カラム追加")
+
         # 2. work_schedules テーブルに追跡カラムを追加
         cursor.execute("PRAGMA table_info(work_schedules)")
         columns = [column[1] for column in cursor.fetchall()]
@@ -256,6 +264,57 @@ def get_all_workplaces():
     ).fetchall()
     conn.close()
     return workplaces
+
+def get_active_workplaces():
+    """有効な勤務場所のみ取得"""
+    conn = get_db_connection()
+    workplaces = conn.execute(
+        'SELECT * FROM workplaces WHERE is_active = 1 ORDER BY sort_order, name'
+    ).fetchall()
+    conn.close()
+    return workplaces
+
+def update_workplace(workplace_id, name, sort_order):
+    """勤務場所を更新"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            'UPDATE workplaces SET name = ?, sort_order = ? WHERE id = ?',
+            (name, sort_order, workplace_id)
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
+def delete_workplace(workplace_id):
+    """勤務場所を削除（論理削除）"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE workplaces SET is_active = 0 WHERE id = ?',
+        (workplace_id,)
+    )
+    conn.commit()
+    affected = cursor.rowcount
+    conn.close()
+    return affected > 0
+
+def restore_workplace(workplace_id):
+    """勤務場所を復元"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE workplaces SET is_active = 1 WHERE id = ?',
+        (workplace_id,)
+    )
+    conn.commit()
+    affected = cursor.rowcount
+    conn.close()
+    return affected > 0
 
 # 勤務予定関連の関数
 def add_work_schedule(employee_id, work_date, workplace, work_time):
