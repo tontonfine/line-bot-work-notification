@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>従業員登録</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        .logo {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .success-message .checkmark {
+            font-size: 80px;
+            color: #28a745;
+            animation: scaleIn 0.5s ease-out;
+        }
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-card">
+        <!-- ローディング表示 -->
+        <div id="loading" class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">LIFF初期化中...</p>
+        </div>
+
+        <!-- 登録フォーム -->
+        <div id="registerForm" style="display: none;">
+            <div class="logo">👤</div>
+            <h3 class="text-center mb-4">従業員登録</h3>
+            <p class="text-center text-muted mb-4">
+                勤務連絡を受け取るために<br>従業員番号を入力してください
+            </p>
+
+            <form id="registrationForm">
+                <div class="mb-4">
+                    <label for="employeeNumber" class="form-label">従業員番号</label>
+                    <input type="text" class="form-control form-control-lg"
+                           id="employeeNumber"
+                           placeholder="例: EMP001"
+                           required>
+                    <div class="form-text">管理者から発行された従業員番号を入力してください</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    登録する
+                </button>
+            </form>
+
+            <div id="errorMessage" class="alert alert-danger mt-3" style="display: none;"></div>
+        </div>
+
+        <!-- 成功メッセージ -->
+        <div id="successMessage" class="success-message">
+            <div class="checkmark">✓</div>
+            <h4 class="text-success mb-3">登録完了！</h4>
+            <p class="text-muted">勤務連絡を受け取る準備ができました</p>
+            <button class="btn btn-primary mt-3" onclick="liff.closeWindow()">
+                閉じる
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const LIFF_ID = '{{ liff_id }}';
+        let lineUserId = null;
+
+        // LIFF初期化
+        async function initializeLiff() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                // LINEユーザーIDを取得
+                const profile = await liff.getProfile();
+                lineUserId = profile.userId;
+
+                // フォームを表示
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+
+            } catch (error) {
+                console.error('LIFF初期化エラー:', error);
+                showError('初期化に失敗しました。もう一度お試しください。');
+            }
+        }
+
+        // 登録処理
+        document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const employeeNumber = document.getElementById('employeeNumber').value.trim();
+
+            if (!employeeNumber) {
+                showError('従業員番号を入力してください');
+                return;
+            }
+
+            if (!lineUserId) {
+                showError('LINEユーザーIDが取得できません');
+                return;
+            }
+
+            // ボタンを無効化
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '登録中...';
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        employee_number: employeeNumber,
+                        line_user_id: lineUserId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // 成功メッセージを表示
+                    document.getElementById('registerForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                } else {
+                    showError(result.error || '登録に失敗しました');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '登録する';
+                }
+            } catch (error) {
+                console.error('登録エラー:', error);
+                showError('通信エラーが発生しました');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '登録する';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // LIFF初期化を実行
+        initializeLiff();
+    </script>
+</body>
+</html>

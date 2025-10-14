@@ -1,0 +1,90 @@
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:61: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+✅ 環境変数チェック完了
+✅ データベース初期化完了
+✅ system_settings テーブル作成
+✅ notification_managers テーブル作成
+✅ notifications テーブル作成
+🎉 マイグレーション完了
+⏰ スケジューラーセットアップ: 期限時刻 13:00
+✅ 13:00チェックジョブ登録: 毎日13:00
+✅ 14:00チェックジョブ登録: 毎日14:00
+🚀 スケジューラー起動完了
+✅ スケジューラーセットアップ完了
+🚀 アプリケーションを起動します...
+📍 http://127.0.0.1:5001 でアクセスできます
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.1.72:5001
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:61: LineBotSdkDeprecatedIn30: Call to deprecated class LineBotApi. (Use v3 class; linebot.v3.<feature>. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:62: LineBotSdkDeprecatedIn30: Call to deprecated class WebhookHandler. (Use 'from linebot.v3.webhook import WebhookHandler' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  handler = WebhookHandler(LINE_CHANNEL_SECRET)
+ * Debugger is active!
+ * Debugger PIN: 140-513-896
+127.0.0.1 - - [14/Oct/2025 17:36:51] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:36:51] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:36:51] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:36:51] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:36:51] "[36mGET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 17:36:51] "[36mGET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Oct/2025 17:37:00] "GET /wizard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:37:00] "GET /api/part_time_employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:37:32] "POST /send HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:37:33] "GET / HTTP/1.1" 200 -
+/Users/kondokaito/Desktop/kyoshoran/official_line/一斉送信/app.py:230: LineBotSdkDeprecatedIn30: Call to deprecated method reply_message. (Use 'from linebot.v3.messaging import MessagingApi' and 'MessagingApi(...).reply_message(...)' instead. See https://github.com/line/line-bot-sdk-python/blob/master/README.rst for more details.) -- Deprecated since version 3.0.0.
+  line_bot_api.reply_message(
+127.0.0.1 - - [14/Oct/2025 17:37:55] "POST /webhook HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:38:02] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:38:11] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:38:18] "[32mGET /settings HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Oct/2025 17:38:18] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:38:25] "[32mPOST /login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Oct/2025 17:38:25] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:38:50] "POST /employees/type HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:38:51] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:39:10] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:39:12] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:40:12] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:41:48] "GET /wizard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:41:48] "GET /api/part_time_employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:42:20] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:42:21] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:43:19] "POST /settings/managers HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:43:21] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:43:27] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:43:29] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:44:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:46:13] "GET /wizard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:46:13] "GET /api/part_time_employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:47:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:51:37] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:51:44] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:51:46] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:52:37] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:53:01] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:53:46] "POST /employees/add HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:53:48] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:54:43] "[31m[1mPOST /employees/add HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Oct/2025 17:54:55] "[31m[1mPOST /employees/add HTTP/1.1[0m" 400 -
+127.0.0.1 - - [14/Oct/2025 17:55:00] "POST /employees/add HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 17:55:02] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 18:06:00] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 18:06:01] "GET /wizard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 18:06:01] "GET /api/part_time_employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 18:07:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 18:07:19] "GET /employees HTTP/1.1" 200 -
+127.0.0.1 - - [14/Oct/2025 18:34:07] "[33mGET /apple-touch-icon-precomposed.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Oct/2025 18:34:07] "[33mGET /apple-touch-icon.png HTTP/1.1[0m" 404 -
+127.0.0.1 - - [14/Oct/2025 18:34:07] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -

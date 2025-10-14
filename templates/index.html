@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勤務連絡送信システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .employee-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .employee-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .employee-card.selected {
+            background-color: #e7f3ff;
+            border-color: #0d6efd;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">📱 勤務連絡送信システム</span>
+            <div>
+                <a href="{{ url_for('settings') }}" class="btn btn-light btn-sm me-2">⚙️ 設定</a>
+                <a href="{{ url_for('employees_list') }}" class="btn btn-light btn-sm">従業員管理</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Wizard Link -->
+        <div class="alert alert-primary d-flex justify-content-between align-items-center" role="alert">
+            <div>
+                <h5 class="mb-1">🧙 新しいウィザード形式で送信</h5>
+                <p class="mb-0">ステップごとに簡単に送信できる新しいインターフェースです</p>
+            </div>
+            <a href="{{ url_for('wizard') }}" class="btn btn-primary btn-lg">ウィザードで送信 →</a>
+        </div>
+
+        <!-- LIFF登録案内 -->
+        <div class="alert alert-info" role="alert">
+            <h5>📢 従業員の皆様へ</h5>
+            <p>勤務連絡を受け取るには、LINE公式アカウントを友だち追加後、以下のURLから登録してください：</p>
+            <code>https://liff.line.me/{{ liff_id }}</code>
+        </div>
+
+        <!-- 送信フォーム -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">🚀 勤務連絡を送信</h5>
+            </div>
+            <div class="card-body">
+                <form id="sendForm">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">勤務日</label>
+                            <input type="date" class="form-control" id="defaultDate" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">勤務場所</label>
+                            <select class="form-select" id="defaultWorkplace">
+                                <option value="">-- 選択してください --</option>
+                                {% for workplace in workplaces %}
+                                <option value="{{ workplace.name }}">{{ workplace.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">出勤時間</label>
+                            <input type="time" class="form-control" id="defaultTime" value="09:00">
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <small>💡 上記は全従業員共通の初期値です。個別に変更したい場合は下の各従業員カードで調整してください。</small>
+                    </div>
+
+                    <h6 class="mb-3">出勤者を選択</h6>
+                    <div id="employeeList">
+                        {% for employee in employees %}
+                        <div class="employee-card" data-employee-id="{{ employee.id }}"
+                             data-line-id="{{ employee.line_user_id or '' }}"
+                             data-name="{{ employee.name }}">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input employee-checkbox" type="checkbox"
+                                               value="{{ employee.id }}"
+                                               {% if not employee.line_user_id %}disabled{% endif %}>
+                                        <label class="form-check-label fw-bold">
+                                            {{ employee.name }}
+                                        </label>
+                                    </div>
+                                    {% if employee.line_user_id %}
+                                    <span class="badge bg-success status-badge">登録済み</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary status-badge">未登録</span>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="date" class="form-control form-control-sm employee-date"
+                                           disabled>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select form-select-sm employee-workplace" disabled>
+                                        <option value="">-- 選択 --</option>
+                                        {% for workplace in workplaces %}
+                                        <option value="{{ workplace.name }}">{{ workplace.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="time" class="form-control form-control-sm employee-time"
+                                           value="09:00" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button type="button" class="btn btn-secondary" id="applyDefaultBtn">
+                            共通設定を全員に適用
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg" id="sendBtn">
+                            📤 選択した従業員に送信
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 送信履歴 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 最近の送信履歴</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>送信日時</th>
+                                <th>従業員名</th>
+                                <th>勤務日</th>
+                                <th>勤務場所</th>
+                                <th>出勤時間</th>
+                                <th>返信状況</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for schedule in recent_schedules %}
+                            <tr>
+                                <td>{{ schedule.sent_at }}</td>
+                                <td>{{ schedule.employee_name }}</td>
+                                <td>{{ schedule.work_date }}</td>
+                                <td>{{ schedule.workplace }}</td>
+                                <td>{{ schedule.work_time }}</td>
+                                <td>
+                                    {% if schedule.reply_id %}
+                                        <span class="badge bg-success">✓ 返信済み</span>
+                                        <br><small class="text-muted">{{ schedule.reply_text[:30] }}...</small>
+                                    {% else %}
+                                        <span class="badge bg-secondary">未返信</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // チェックボックスの状態に応じて入力フィールドを有効化
+        document.querySelectorAll('.employee-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.employee-card');
+                const inputs = card.querySelectorAll('.employee-date, .employee-workplace, .employee-time');
+
+                if (this.checked) {
+                    card.classList.add('selected');
+                    inputs.forEach(input => input.disabled = false);
+                } else {
+                    card.classList.remove('selected');
+                    inputs.forEach(input => input.disabled = true);
+                }
+            });
+        });
+
+        // 共通設定を全員に適用
+        document.getElementById('applyDefaultBtn').addEventListener('click', function() {
+            const defaultDate = document.getElementById('defaultDate').value;
+            const defaultWorkplace = document.getElementById('defaultWorkplace').value;
+            const defaultTime = document.getElementById('defaultTime').value;
+
+            document.querySelectorAll('.employee-card').forEach(card => {
+                const checkbox = card.querySelector('.employee-checkbox');
+                if (checkbox && !checkbox.disabled) {
+                    card.querySelector('.employee-date').value = defaultDate;
+                    card.querySelector('.employee-workplace').value = defaultWorkplace;
+                    card.querySelector('.employee-time').value = defaultTime;
+                }
+            });
+
+            alert('✅ 共通設定を適用しました');
+        });
+
+        // 送信処理
+        document.getElementById('sendForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const notifications = [];
+
+            document.querySelectorAll('.employee-checkbox:checked').forEach(checkbox => {
+                const card = checkbox.closest('.employee-card');
+                const employeeId = card.dataset.employeeId;
+                const lineUserId = card.dataset.lineId;
+                const name = card.dataset.name;
+                const date = card.querySelector('.employee-date').value;
+                const workplace = card.querySelector('.employee-workplace').value;
+                const time = card.querySelector('.employee-time').value;
+
+                if (!date || !workplace || !time) {
+                    alert(`❌ ${name}の情報が不完全です`);
+                    return;
+                }
+
+                notifications.push({
+                    employee_id: employeeId,
+                    line_user_id: lineUserId,
+                    work_date: date,
+                    workplace: workplace,
+                    work_time: time
+                });
+            });
+
+            if (notifications.length === 0) {
+                alert('❌ 送信対象を選択してください');
+                return;
+            }
+
+            if (!confirm(`${notifications.length}名に送信しますか？`)) {
+                return;
+            }
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '送信中...';
+
+            try {
+                const response = await fetch('/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ notifications })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ ${result.message}`);
+                    location.reload();
+                } else {
+                    alert(`❌ エラー: ${result.error}`);
+                }
+            } catch (error) {
+                alert('❌ 送信に失敗しました: ' + error.message);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📤 選択した従業員に送信';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定 - 勤務連絡システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">⚙️ 設定</a>
+            <div class="d-flex">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-light me-2">トップに戻る</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">ログアウト</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <!-- 基本設定 -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">⏰ 返信期限設定</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">現在の期限時刻: <strong>{{ deadline_time }}</strong></p>
+                        <div class="mb-3">
+                            <label for="deadline_time" class="form-label">返信期限時刻</label>
+                            <input type="time" class="form-control" id="deadline_time" value="{{ deadline_time }}">
+                        </div>
+                        <button class="btn btn-primary" onclick="updateDeadline()">変更を保存</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- パスワード変更 -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">🔐 パスワード変更</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">現在のパスワード</label>
+                            <input type="password" class="form-control" id="current_password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">新しいパスワード</label>
+                            <input type="password" class="form-control" id="new_password">
+                        </div>
+                        <button class="btn btn-warning" onclick="updatePassword()">パスワードを変更</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通知先社員管理 -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">📨 通知先社員管理</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">返信状況を通知する社員を選択してください</p>
+
+                        <h6 class="mt-3">現在の通知先:</h6>
+                        <ul class="list-group mb-3">
+                            {% if managers %}
+                                {% for manager in managers %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ manager.name }}
+                                        <button class="btn btn-sm btn-danger" onclick="removeManager({{ manager.id }})">削除</button>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item text-muted">通知先が設定されていません</li>
+                            {% endif %}
+                        </ul>
+
+                        <h6>社員を追加:</h6>
+                        <select class="form-select" id="manager_select">
+                            <option value="">社員を選択...</option>
+                            {% for emp in full_time %}
+                                <option value="{{ emp.id }}">{{ emp.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-info mt-2" onclick="addManager()">通知先に追加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 従業員種別管理 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">👥 従業員種別管理</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">従業員をアルバイトまたは社員に設定します</p>
+
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>従業員名</th>
+                                    <th>従業員番号</th>
+                                    <th>種別</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for emp in all_employees %}
+                                    <tr>
+                                        <td>{{ emp.name }}</td>
+                                        <td>{{ emp.employee_number }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if emp.employee_type == 'part_time' else 'secondary' }}">
+                                                {{ 'アルバイト' if emp.employee_type == 'part_time' else '社員' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if emp.employee_type == 'part_time' %}
+                                                <button class="btn btn-sm btn-secondary" onclick="changeEmployeeType({{ emp.id }}, 'full_time')">社員に変更</button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-primary" onclick="changeEmployeeType({{ emp.id }}, 'part_time')">アルバイトに変更</button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updateDeadline() {
+            const time = document.getElementById('deadline_time').value;
+            if (!time) {
+                alert('時刻を選択してください');
+                return;
+            }
+
+            fetch('/settings/deadline', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({deadline_time: time})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function updatePassword() {
+            const current = document.getElementById('current_password').value;
+            const newPass = document.getElementById('new_password').value;
+
+            if (!current || !newPass) {
+                alert('パスワードを入力してください');
+                return;
+            }
+
+            fetch('/settings/password', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    current_password: current,
+                    new_password: newPass
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('current_password').value = '';
+                    document.getElementById('new_password').value = '';
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function addManager() {
+            const select = document.getElementById('manager_select');
+            const employeeId = select.value;
+
+            if (!employeeId) {
+                alert('社員を選択してください');
+                return;
+            }
+
+            fetch('/settings/managers', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    employee_id: employeeId,
+                    action: 'add'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function removeManager(employeeId) {
+            if (!confirm('この社員を通知先から削除しますか？')) {
+                return;
+            }
+
+            fetch('/settings/managers', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    employee_id: employeeId,
+                    action: 'remove'
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function changeEmployeeType(employeeId, newType) {
+            const typeName = newType === 'part_time' ? 'アルバイト' : '社員';
+
+            if (!confirm(`この従業員を${typeName}に変更しますか？`)) {
+                return;
+            }
+
+            fetch('/employees/type', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    employee_id: employeeId,
+                    employee_type: newType
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
