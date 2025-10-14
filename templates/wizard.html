@@ -56,6 +56,12 @@
     </nav>
 
     <div class="container mt-4">
+        <!-- Warning Banner -->
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>⚠️ 注意:</strong> このウィザードからの送信では<strong>履歴が保存されません</strong>。記録が必要な場合はトップ画面から送信してください。
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <!-- Progress Bar -->
         <div class="mb-4">
             <div class="progress">
@@ -327,12 +333,12 @@
                 return;
             }
 
-            if (!confirm(`${notifications.length}件の勤務連絡を送信します。よろしいですか？`)) {
+            if (!confirm(`${notifications.length}件の勤務連絡を送信します。\n\n⚠️ この送信方法では履歴が保存されません。\n送信したい場合は「OK」を押してください。`)) {
                 return;
             }
 
             try {
-                const response = await fetch('/send', {
+                const response = await fetch('/wizard/send', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({notifications: notifications})
@@ -341,7 +347,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`✅ ${result.sent_count}件の送信が完了しました`);
+                    alert(`✅ ${result.sent_count}件の送信が完了しました\n（履歴には保存されていません）`);
                     window.location.href = '/';
                 } else {
                     alert(`❌ エラー: ${result.error}`);

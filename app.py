@@ -87,7 +87,7 @@ def index():
 
 @app.route('/send', methods=['POST'])
 def send_notifications():
-    """勤務連絡を一斉送信"""
+    """勤務連絡を一斉送信（履歴保存あり）"""
     data = request.json
 
     # 送信データの検証
@@ -121,6 +121,30 @@ def send_notifications():
         'failed_count': results['failed'],
         'recorded_count': recorded_count,
         'message': f'{results["success"]}件送信しました（DB記録: {recorded_count}件）'
+    })
+
+
+@app.route('/wizard/send', methods=['POST'])
+def wizard_send_notifications():
+    """ウィザード専用送信（履歴保存なし）"""
+    data = request.json
+
+    # 送信データの検証
+    if not data or 'notifications' not in data:
+        return jsonify({'error': '送信データが不正です'}), 400
+
+    notifications = data['notifications']
+    if not notifications:
+        return jsonify({'error': '送信対象が選択されていません'}), 400
+
+    # 送信実行（データベース記録なし）
+    results = send_bulk_notifications(notifications)
+
+    return jsonify({
+        'success': True,
+        'sent_count': results['success'],
+        'failed_count': results['failed'],
+        'message': f'{results["success"]}件送信しました（履歴には保存されません）'
     })
 
 
