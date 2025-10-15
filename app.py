@@ -96,6 +96,7 @@ if IS_PRODUCTION:
         'script-src': ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://static.line-scdn.net"],
         'style-src': ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
         'img-src': ["'self'", "data:", "https:"],
+        'connect-src': ["'self'", "https://api.line.me", "https://access.line.me"],  # 🔐 LINE API接続を許可
     })
 
 # 🔐 ロギング設定
