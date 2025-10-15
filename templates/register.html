@@ -90,7 +90,7 @@
             <div class="checkmark">✓</div>
             <h4 class="text-success mb-3">登録完了！</h4>
             <p class="text-muted">勤務連絡を受け取る準備ができました</p>
-            <button class="btn btn-primary mt-3" onclick="liff.closeWindow()">
+            <button class="btn btn-primary mt-3" onclick="closeWindow()">
                 閉じる
             </button>
         </div>
@@ -184,6 +184,24 @@
             setTimeout(() => {
                 errorDiv.style.display = 'none';
             }, 5000);
+        }
+
+        // ウィンドウを閉じる処理
+        function closeWindow() {
+            try {
+                if (liff.isInClient()) {
+                    // LINEアプリ内で開いている場合
+                    liff.closeWindow();
+                } else {
+                    // 外部ブラウザで開いている場合
+                    alert('LINEアプリでこのページを開いてください。このタブを閉じてください。');
+                    // 可能であればタブを閉じる試み
+                    window.close();
+                }
+            } catch (error) {
+                console.error('ウィンドウクローズエラー:', error);
+                alert('このタブを手動で閉じてください');
+            }
         }
 
         // LIFF初期化を実行

@@ -22,3 +22,22 @@ ENV/
 *.swp
 *.swo
 .DS_Store
+
+# ログファイル
+*.log
+security.log
+app.log
+
+# Google API認証情報
+credentials.json
+token.json
+
+# データベースバックアップ
+*.db.backup*
+database_backup_*
+
+# 一時ファイル
+requirements_full.txt
+
+# Playwright MCP
+.playwright-mcp/

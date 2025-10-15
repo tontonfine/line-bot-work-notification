@@ -38,8 +38,17 @@ def change_password(current_password, new_password):
     if not verify_password(current_password):
         return False, "現在のパスワードが正しくありません"
 
-    if len(new_password) < 4:
-        return False, "新しいパスワードは4文字以上にしてください"
+    # セキュアなパスワードポリシー
+    if len(new_password) < 12:
+        return False, "新しいパスワードは12文字以上にしてください"
+
+    # 推奨: 英数字と記号を含む複雑さチェック
+    has_upper = any(c.isupper() for c in new_password)
+    has_lower = any(c.islower() for c in new_password)
+    has_digit = any(c.isdigit() for c in new_password)
+
+    if not (has_upper and has_lower and has_digit):
+        return False, "パスワードは大文字、小文字、数字を含む必要があります"
 
     new_hash = hash_password(new_password)
     update_setting('admin_password_hash', new_hash)

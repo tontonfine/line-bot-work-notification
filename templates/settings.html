@@ -2,330 +2,697 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>設定 - 勤務連絡システム</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/time-picker.css') }}" rel="stylesheet">
     <style>
-        .settings-card {
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            transition: box-shadow 0.3s ease;
-        }
-        .settings-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .settings-card-header {
-            background: white;
-            border-bottom: 2px solid #f0f0f0;
-            padding: 1.25rem 1.5rem;
-            border-radius: 8px 8px 0 0;
-        }
-        .settings-card-header h5 {
+        /* ===== CSS Reset & Base ===== */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* iOS Color System */
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-orange: #FF9500;
+            --ios-gray: #8E8E93;
+            --ios-gray-2: #AEAEB2;
+            --ios-gray-3: #C7C7CC;
+            --ios-gray-4: #D1D1D6;
+            --ios-gray-5: #E5E5EA;
+            --ios-gray-6: #F2F2F7;
+
+            /* Semantic Colors */
+            --primary: var(--ios-blue);
+            --success: var(--ios-green);
+            --danger: var(--ios-red);
+            --warning: var(--ios-orange);
+            --background: var(--ios-gray-6);
+            --card-bg: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: var(--ios-gray);
+            --border: var(--ios-gray-5);
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+
+            /* Typography */
+            --font-size-sm: 13px;
+            --font-size-md: 15px;
+            --font-size-lg: 17px;
+            --font-size-xl: 20px;
+
+            /* iOS Specific */
+            --tap-target-min: 44px;
+            --card-radius: 10px;
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+            --safe-area-left: env(safe-area-inset-left);
+            --safe-area-right: env(safe-area-inset-right);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            font-size: var(--font-size-md);
+            line-height: 1.5;
+            padding-top: calc(60px + var(--safe-area-top));
+            padding-bottom: var(--safe-area-bottom);
+            padding-left: var(--safe-area-left);
+            padding-right: var(--safe-area-right);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== Fixed Header ===== */
+        .fixed-header {
+            position: fixed;
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            z-index: 1000;
+            box-shadow: 0 1px 0 var(--border);
+        }
+
+        .nav-bar {
             display: flex;
             align-items: center;
-            font-size: 1.25rem;
+            justify-content: space-between;
+            height: 60px;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .nav-title {
+            font-size: var(--font-size-xl);
             font-weight: 600;
-            color: #1a202c;
         }
-        .settings-card-header .icon {
-            font-size: 1.5rem;
-            margin-right: 0.75rem;
+
+        .nav-actions {
+            display: flex;
+            gap: var(--spacing-sm);
         }
-        .settings-card-body {
-            padding: 1.5rem;
+
+        /* ===== Container ===== */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
         }
-        .page-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e2e8f0;
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--card-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+
+        .card-header {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* ===== Forms ===== */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            min-height: 48px;
+            padding: 0 var(--spacing-md);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: var(--font-size-md);
+            background: var(--card-bg);
+            transition: border-color 150ms;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%238E8E93' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            padding: var(--spacing-md);
+            resize: vertical;
+        }
+
+        .form-hint {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            min-height: 48px;
+            padding: 0 var(--spacing-lg);
+            border: none;
+            border-radius: 10px;
+            font-size: var(--font-size-md);
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: opacity 150ms, transform 150ms;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--ios-gray);
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            min-height: 36px;
+            padding: 0 var(--spacing-md);
+            font-size: var(--font-size-sm);
+        }
+
+        /* ===== List Group ===== */
+        .list-group {
+            list-style: none;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+        }
+
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-lg);
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            font-size: var(--font-size-lg);
+        }
+
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-group-item strong {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+        }
+
+        /* ===== Info Box ===== */
+        .info-box {
+            background: rgba(0, 122, 255, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: var(--card-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-box h6 {
+            font-size: var(--font-size-md);
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .info-box p {
+            font-size: var(--font-size-sm);
+            margin: var(--spacing-xs) 0;
+        }
+
+        .info-box code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-size: var(--font-size-sm);
+        }
+
+        /* ===== Table ===== */
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--card-radius);
+            background: var(--card-bg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--ios-gray-6);
+        }
+
+        th, td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: var(--font-size-sm);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ===== Alert ===== */
+        .alert {
+            padding: var(--spacing-md);
+            border-radius: var(--card-radius);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: flex-start;
+        }
+
+        .alert-success {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--success);
+        }
+
+        .alert-danger {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--danger);
+        }
+
+        /* ===== Row Layout ===== */
+        .row {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .col-md-6 {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .col-md-5 {
+            flex: 1 1 calc(41.666% - var(--spacing-md));
+            min-width: 150px;
+        }
+
+        .col-md-4 {
+            flex: 1 1 calc(33.333% - var(--spacing-md));
+            min-width: 120px;
+        }
+
+        .col-md-3 {
+            flex: 1 1 calc(25% - var(--spacing-md));
+            min-width: 100px;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-3, .col-md-4, .col-md-5, .col-md-6 {
+                flex: 1 1 100%;
+            }
+        }
+
+        /* ===== Utility Classes ===== */
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-lg { margin-bottom: var(--spacing-lg); }
+        .mt-lg { margin-top: var(--spacing-lg); }
+        .pb-lg { padding-bottom: var(--spacing-lg); }
+        .border-bottom { border-bottom: 1px solid var(--border); }
     </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <span class="fs-4">⚙️</span> 設定
-            </a>
-            <div class="d-flex">
-                <a href="{{ url_for('index') }}" class="btn btn-outline-light me-2">トップに戻る</a>
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">ログアウト</a>
+<body>
+    <!-- Fixed Header -->
+    <div class="fixed-header">
+        <div class="nav-bar">
+            <div class="nav-title">⚙️ 設定</div>
+            <div class="nav-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-outline btn-sm">トップ</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">ログアウト</a>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <div class="container mt-4 mb-5">
+    <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                    <div class="alert alert-{{ category }}">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <div class="page-header">
-            <h2 class="mb-0">システム設定</h2>
-            <p class="text-muted mb-0">勤務連絡システムの各種設定を管理します</p>
+        <!-- 返信期限設定 -->
+        <div class="card">
+            <div class="card-header">
+                <span>⏰</span>
+                返信期限設定
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">返信期限時刻</label>
+                    <div id="deadline_time_picker"></div>
+                    <div class="form-hint">現在: <strong id="current_deadline">{{ deadline_time }}</strong></div>
+                </div>
+                <div class="col-md-6" style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-primary" style="width: 100%;" onclick="updateDeadline()">
+                        変更を保存
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- セクション1: 返信期限設定 -->
-        <div class="settings-card">
-            <div class="settings-card-header">
-                <h5>
-                    <span class="icon">⏰</span>
-                    返信期限設定
-                </h5>
+        <!-- 通知先社員管理 -->
+        <div class="card">
+            <div class="card-header">
+                <span>👥</span>
+                通知先社員管理
             </div>
-            <div class="settings-card-body">
-                <p class="text-muted mb-3">アルバイトスタッフが勤務連絡に返信する期限時刻を設定します</p>
-                <div class="row align-items-end">
-                    <div class="col-md-8">
-                        <label class="form-label">返信期限時刻</label>
-                        <div id="deadline_time_picker"></div>
-                        <div class="form-text mt-2">現在の設定: <strong id="current_deadline">{{ deadline_time }}</strong></div>
+
+            <!-- 全勤務地向け通知先 -->
+            <div class="mb-lg">
+                <h6 style="font-weight: 600; margin-bottom: var(--spacing-md);">🌐 全勤務地</h6>
+                <ul class="list-group mb-lg">
+                    {% set global_managers = managers|selectattr('workplace_id', 'none')|list %}
+                    {% if global_managers %}
+                        {% for manager in global_managers %}
+                            <li class="list-group-item">
+                                <strong>{{ manager.name }}</strong>
+                                <button class="btn btn-danger btn-sm" onclick="removeManager({{ manager.id }})">
+                                    削除
+                                </button>
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-secondary text-center">
+                            未設定
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <!-- 勤務地別通知先 -->
+            {% for workplace in workplaces %}
+                {% if workplace.is_active %}
+                    <div class="mb-lg pb-lg border-bottom">
+                        <h6 style="font-weight: 600; margin-bottom: var(--spacing-md);">📍 {{ workplace.name }}</h6>
+                        <ul class="list-group">
+                            {% set workplace_managers = managers|selectattr('workplace_id', 'equalto', workplace.id)|list %}
+                            {% if workplace_managers %}
+                                {% for manager in workplace_managers %}
+                                    <li class="list-group-item">
+                                        <strong>{{ manager.name }}</strong>
+                                        <button class="btn btn-danger btn-sm" onclick="removeManager({{ manager.id }})">
+                                            削除
+                                        </button>
+                                    </li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="list-group-item text-secondary text-center">
+                                    未設定
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <!-- 社員追加フォーム -->
+            <div style="background: var(--ios-gray-6); padding: var(--spacing-lg); border-radius: var(--card-radius);">
+                <h6 style="font-weight: 600; margin-bottom: var(--spacing-md);">新しい通知先を追加</h6>
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label">社員</label>
+                        <select class="form-control" id="manager_select">
+                            <option value="">選択...</option>
+                            {% for emp in full_time %}
+                                <option value="{{ emp.id }}">{{ emp.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="col-md-4">
-                        <button class="btn btn-primary btn-lg w-100" onclick="updateDeadline()">
-                            変更を保存
+                        <label class="form-label">通知対象</label>
+                        <select class="form-control" id="workplace_select">
+                            <option value="">🌐 全勤務地</option>
+                            {% for workplace in workplaces %}
+                                {% if workplace.is_active %}
+                                    <option value="{{ workplace.id }}">{{ workplace.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3" style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-primary" style="width: 100%;" onclick="addManager()">
+                            追加
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- セクション2: 通知先社員管理（勤務地ごと） -->
-        <div class="settings-card">
-            <div class="settings-card-header">
-                <h5>
-                    <span class="icon">👥</span>
-                    通知先社員管理（勤務地ごと）
-                </h5>
+        <!-- 送信テンプレート設定 -->
+        <div class="card">
+            <div class="card-header">
+                <span>📝</span>
+                送信テンプレート
             </div>
-            <div class="settings-card-body">
-                <p class="text-muted mb-3">返信状況を通知する社員を選択してください。勤務地ごとに通知先を設定できます</p>
 
-                <!-- 全勤務地向け通知先 -->
-                <div class="mb-4">
-                    <h6 class="mb-3">🌐 全勤務地向け通知先</h6>
-                    <ul class="list-group mb-3">
-                        {% set global_managers = managers|selectattr('workplace_id', 'none')|list %}
-                        {% if global_managers %}
-                            {% for manager in global_managers %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>
-                                        <strong>{{ manager.name }}</strong>
-                                    </span>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="removeManager({{ manager.id }})">
-                                        削除
-                                    </button>
-                                </li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="list-group-item text-muted text-center py-2">
-                                全勤務地向けの通知先が設定されていません
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
+            <div class="info-box">
+                <h6>📋 使用可能な変数</h6>
+                <p><code>{date}</code> - 勤務日（例: 10月14日(火)）</p>
+                <p><code>{workplace}</code> - 勤務場所名</p>
+                <p><code>{time}</code> - 出勤時間</p>
+            </div>
 
-                <!-- 勤務地別通知先 -->
-                {% for workplace in workplaces %}
-                    {% if workplace.is_active %}
-                        <div class="mb-4 pb-3 border-bottom">
-                            <h6 class="mb-3">📍 {{ workplace.name }}</h6>
-                            <ul class="list-group mb-3">
-                                {% set workplace_managers = managers|selectattr('workplace_id', 'equalto', workplace.id)|list %}
-                                {% if workplace_managers %}
-                                    {% for manager in workplace_managers %}
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <span>
-                                                <strong>{{ manager.name }}</strong>
-                                            </span>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="removeManager({{ manager.id }})">
-                                                削除
-                                            </button>
-                                        </li>
-                                    {% endfor %}
-                                {% else %}
-                                    <li class="list-group-item text-muted text-center py-2">
-                                        通知先が設定されていません
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    {% endif %}
-                {% endfor %}
+            <div class="form-group">
+                <label for="message_template" class="form-label">メッセージテンプレート</label>
+                <textarea class="form-control" id="message_template" rows="8">{{ message_template }}</textarea>
+            </div>
 
-                <!-- 社員追加フォーム -->
-                <div class="card" style="background-color: #f8f9fa;">
-                    <div class="card-body">
-                        <h6 class="mb-3">新しい通知先を追加</h6>
-                        <div class="row">
-                            <div class="col-md-5">
-                                <label class="form-label">社員を選択</label>
-                                <select class="form-select" id="manager_select">
-                                    <option value="">社員を選択してください...</option>
-                                    {% for emp in full_time %}
-                                        <option value="{{ emp.id }}">{{ emp.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">通知対象勤務地</label>
-                                <select class="form-select" id="workplace_select">
-                                    <option value="">🌐 全勤務地</option>
-                                    {% for workplace in workplaces %}
-                                        {% if workplace.is_active %}
-                                            <option value="{{ workplace.id }}">{{ workplace.name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-3 d-flex align-items-end">
-                                <button class="btn btn-primary w-100" onclick="addManager()">
-                                    追加
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div style="display: flex; gap: var(--spacing-sm);">
+                <button class="btn btn-primary" onclick="updateMessageTemplate()">
+                    保存
+                </button>
+                <button class="btn btn-secondary" onclick="resetMessageTemplate()">
+                    デフォルトに戻す
+                </button>
             </div>
         </div>
 
-        <!-- セクション3: 勤務場所管理 -->
-        <div class="settings-card">
-            <div class="settings-card-header">
-                <h5>
-                    <span class="icon">🏢</span>
-                    勤務場所管理
-                </h5>
+        <!-- 勤務場所管理 -->
+        <div class="card">
+            <div class="card-header">
+                <span>🏢</span>
+                勤務場所管理
             </div>
-            <div class="settings-card-body">
-                <p class="text-muted mb-3">勤務場所の追加・編集・削除を行います。削除は完全削除です（復元不可）</p>
 
-                <!-- 追加フォーム -->
-                <div class="card mb-4" style="background-color: #f8f9fa;">
-                    <div class="card-body">
-                        <h6 class="mb-3">新しい勤務場所を追加</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <label class="form-label">勤務場所名</label>
-                                <input type="text" class="form-control" id="new_workplace_name" placeholder="例: 横浜オフィス">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">表示順序</label>
-                                <input type="number" class="form-control" id="new_workplace_order" value="999" min="0">
-                            </div>
-                            <div class="col-md-3 d-flex align-items-end">
-                                <button class="btn btn-success w-100" onclick="addWorkplace()">
-                                    ➕ 追加
-                                </button>
-                            </div>
-                        </div>
+            <!-- 追加フォーム -->
+            <div style="background: var(--ios-gray-6); padding: var(--spacing-lg); border-radius: var(--card-radius); margin-bottom: var(--spacing-lg);">
+                <h6 style="font-weight: 600; margin-bottom: var(--spacing-md);">新しい勤務場所を追加</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">勤務場所名</label>
+                        <input type="text" class="form-control" id="new_workplace_name">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">表示順序</label>
+                        <input type="number" class="form-control" id="new_workplace_order" value="999" min="0">
+                    </div>
+                    <div class="col-md-3" style="display: flex; align-items: flex-end;">
+                        <button class="btn btn-success" style="width: 100%;" onclick="addWorkplace()">
+                            ➕ 追加
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- 勤務場所一覧 -->
-                <h6 class="mb-3">現在の勤務場所</h6>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
+            <!-- 勤務場所一覧 -->
+            <h6 style="font-weight: 600; margin-bottom: var(--spacing-md);">現在の勤務場所</h6>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>勤務場所名</th>
+                            <th>表示順序</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for wp in workplaces %}
+                            {% if wp.is_active %}
                             <tr>
-                                <th>ID</th>
-                                <th>勤務場所名</th>
-                                <th>表示順序</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="workplaceTableBody">
-                            {% for wp in workplaces %}
-                                {% if wp.is_active %}
-                                <tr id="wp-row-{{ wp.id }}">
-                                    <td>{{ wp.id }}</td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm" id="wp-name-{{ wp.id }}" value="{{ wp.name }}">
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm" id="wp-order-{{ wp.id }}" value="{{ wp.sort_order }}" min="0" style="width: 100px;">
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-primary me-1" onclick="updateWorkplace({{ wp.id }})">
+                                <td>
+                                    <input type="text" class="form-control" id="wp-name-{{ wp.id }}" value="{{ wp.name }}" style="min-height: 36px;">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control" id="wp-order-{{ wp.id }}" value="{{ wp.sort_order }}" min="0" style="min-height: 36px; width: 100px;">
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: var(--spacing-xs);">
+                                        <button class="btn btn-primary btn-sm" onclick="updateWorkplace({{ wp.id }})">
                                             保存
                                         </button>
-                                        <button class="btn btn-sm btn-danger" onclick="deleteWorkplace({{ wp.id }})">
+                                        <button class="btn btn-danger btn-sm" onclick="deleteWorkplace({{ wp.id }})">
                                             削除
                                         </button>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- テスト機能 -->
+        <div class="card">
+            <div class="card-header">
+                <span>🧪</span>
+                テスト機能
+            </div>
+
+            <div class="info-box">
+                <h6>💡 テスト用エンドポイント</h6>
+                <p>実際の時刻を待たずに、期限チェック機能を手動でテストできます。</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                <div>
+                    <h6 style="font-weight: 600; margin-bottom: var(--spacing-sm);">13:00 期限チェック（期限時刻）</h6>
+                    <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                        未返信者に元のメッセージを再送 ＋ 社員に返信状況レポートを送信
+                    </p>
+                    <button class="btn btn-primary" onclick="testCheckDeadline()">
+                        📤 期限チェックを実行
+                    </button>
+                </div>
+
+                <div>
+                    <h6 style="font-weight: 600; margin-bottom: var(--spacing-sm);">14:00 期限+1時間チェック</h6>
+                    <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                        未返信者にメッセージ3連続送信 ＋ 社員に未返信者リストを送信
+                    </p>
+                    <button class="btn btn-warning" onclick="testCheckDeadlinePlus1()">
+                        📤📤📤 期限+1時間チェックを実行
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- セクション4: パスワード変更 -->
-        <div class="settings-card">
-            <div class="settings-card-header">
-                <h5>
-                    <span class="icon">🔒</span>
-                    パスワード変更
-                </h5>
+        <!-- パスワード変更 -->
+        <div class="card">
+            <div class="card-header">
+                <span>🔒</span>
+                パスワード変更
             </div>
-            <div class="settings-card-body">
-                <p class="text-muted mb-3">管理画面へのログインパスワードを変更します</p>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="current_password" class="form-label">現在のパスワード</label>
-                        <input type="password" class="form-control" id="current_password" placeholder="現在のパスワードを入力">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="new_password" class="form-label">新しいパスワード</label>
-                        <input type="password" class="form-control" id="new_password" placeholder="新しいパスワードを入力">
-                    </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="current_password" class="form-label">現在のパスワード</label>
+                    <input type="password" class="form-control" id="current_password">
                 </div>
-                <button class="btn btn-warning" onclick="updatePassword()">
-                    パスワードを変更
-                </button>
+                <div class="col-md-6">
+                    <label for="new_password" class="form-label">新しいパスワード</label>
+                    <input type="password" class="form-control" id="new_password">
+                </div>
             </div>
+            <button class="btn btn-warning mt-lg" onclick="updatePassword()">
+                パスワードを変更
+            </button>
         </div>
 
-        <!-- セクション5: 従業員管理パスワード変更 -->
-        <div class="settings-card">
-            <div class="settings-card-header">
-                <h5>
-                    <span class="icon">👥</span>
-                    従業員管理パスワード変更
-                </h5>
+        <!-- 従業員管理パスワード変更 -->
+        <div class="card">
+            <div class="card-header">
+                <span>👥</span>
+                従業員管理パスワード
             </div>
-            <div class="settings-card-body">
-                <p class="text-muted mb-3">従業員管理画面へのアクセスパスワードを変更します</p>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="emp_current_password" class="form-label">現在のパスワード</label>
-                        <input type="password" class="form-control" id="emp_current_password" placeholder="現在のパスワードを入力">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="emp_new_password" class="form-label">新しいパスワード</label>
-                        <input type="password" class="form-control" id="emp_new_password" placeholder="新しいパスワードを入力">
-                    </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="emp_current_password" class="form-label">現在のパスワード</label>
+                    <input type="password" class="form-control" id="emp_current_password">
                 </div>
-                <button class="btn btn-warning" onclick="updateEmployeePassword()">
-                    パスワードを変更
-                </button>
+                <div class="col-md-6">
+                    <label for="emp_new_password" class="form-label">新しいパスワード</label>
+                    <input type="password" class="form-control" id="emp_new_password">
+                </div>
             </div>
+            <button class="btn btn-warning mt-lg" onclick="updateEmployeePassword()">
+                パスワードを変更
+            </button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/time-picker.js') }}"></script>
     <script>
         // TimePicker初期化
@@ -338,7 +705,7 @@
                 defaultHour: hour,
                 defaultMinute: minute,
                 minuteStep: 15,
-                allowCustomMinute: true,
+                allowAsap: false,
                 onChange: function(time) {
                     console.log('時刻変更:', time.formatted);
                 }
@@ -440,7 +807,6 @@
                 action: 'add'
             };
 
-            // workplaceIdが空文字列の場合はnull（全勤務地向け）
             if (workplaceId) {
                 requestBody.workplace_id = parseInt(workplaceId);
             }
@@ -484,34 +850,6 @@
                 }
             });
         }
-
-        function changeEmployeeType(employeeId, newType) {
-            const typeName = newType === 'part_time' ? 'アルバイト' : '社員';
-
-            if (!confirm(`この従業員を${typeName}に変更しますか？`)) {
-                return;
-            }
-
-            fetch('/employees/type', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    employee_id: employeeId,
-                    employee_type: newType
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    location.reload();
-                } else {
-                    alert('エラー: ' + data.error);
-                }
-            });
-        }
-
-        // ========== 勤務場所管理 ==========
 
         function addWorkplace() {
             const name = document.getElementById('new_workplace_name').value.trim();
@@ -588,6 +926,93 @@
                 } else {
                     alert('エラー: ' + data.error);
                 }
+            });
+        }
+
+        function updateMessageTemplate() {
+            const template = document.getElementById('message_template').value.trim();
+
+            if (!template) {
+                alert('テンプレートを入力してください');
+                return;
+            }
+
+            fetch('/settings/message_template', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({template: template})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function resetMessageTemplate() {
+            if (!confirm('デフォルトのテンプレートに戻しますか？')) {
+                return;
+            }
+
+            fetch('/settings/message_template/reset', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            });
+        }
+
+        function testCheckDeadline() {
+            if (!confirm('期限チェック（13:00相当）を実行しますか？\n\n本日送信した勤務連絡に対して：\n・未返信者に元のメッセージを再送\n・社員に返信状況レポートを送信')) {
+                return;
+            }
+
+            fetch('/test/check_deadline', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            })
+            .catch(err => {
+                alert('通信エラー: ' + err.message);
+            });
+        }
+
+        function testCheckDeadlinePlus1() {
+            if (!confirm('期限+1時間チェック（14:00相当）を実行しますか？\n\n本日送信した勤務連絡に対して：\n・まだ未返信の人に3回連続でメッセージ送信\n・社員に未返信者リストを送信')) {
+                return;
+            }
+
+            fetch('/test/check_deadline_plus_1', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('エラー: ' + data.error);
+                }
+            })
+            .catch(err => {
+                alert('通信エラー: ' + err.message);
             });
         }
     </script>

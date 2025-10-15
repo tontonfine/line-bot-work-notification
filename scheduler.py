@@ -30,15 +30,16 @@ def check_1pm_replies():
 
         print(f"📊 返信済み: {len(replied)}件、未返信: {len(not_replied)}件")
 
-        # 未返信者に再送
+        # 未返信者に再送（元のメッセージ内容を使用）
         for schedule in not_replied:
             if schedule['line_user_id']:
                 print(f"📤 再送信: {schedule['employee_name']}")
-                success = send_work_notification(
+                success, _ = send_work_notification(
                     schedule['line_user_id'],
                     schedule['work_date'],
                     schedule['workplace'],
-                    schedule['work_time']
+                    schedule['work_time'],
+                    schedule['message_content']  # 元のメッセージ内容を使用
                 )
                 if success:
                     update_first_reminder_sent(schedule['id'])
@@ -79,7 +80,7 @@ def check_2pm_replies():
 
         print(f"🚨 まだ未返信: {len(still_not_replied)}件")
 
-        # 3回連続送信
+        # 3回連続送信（元のメッセージ内容を使用）
         for schedule in still_not_replied:
             if schedule['line_user_id']:
                 print(f"📤📤📤 3回連続送信: {schedule['employee_name']}")
@@ -87,7 +88,8 @@ def check_2pm_replies():
                     schedule['line_user_id'],
                     schedule['work_date'],
                     schedule['workplace'],
-                    schedule['work_time']
+                    schedule['work_time'],
+                    schedule['message_content']  # 元のメッセージ内容を使用
                 )
                 if success:
                     update_second_reminder_sent(schedule['id'])

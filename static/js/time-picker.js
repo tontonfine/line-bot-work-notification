@@ -15,7 +15,7 @@ class TimePicker {
             defaultHour: options.defaultHour || 13,
             defaultMinute: options.defaultMinute || 0,
             minuteStep: options.minuteStep || 15,
-            allowCustomMinute: options.allowCustomMinute !== false,
+            allowAsap: options.allowAsap !== false,
             onChange: options.onChange || null,
             ...options
         };
@@ -25,46 +25,43 @@ class TimePicker {
     }
 
     render() {
-        const minuteOptions = this.generateMinuteOptions();
-
         this.container.innerHTML = `
             <div class="time-picker">
                 <div class="time-picker-group">
-                    <label class="time-picker-label">時</label>
-                    <select class="time-picker-select time-picker-hour" aria-label="時">
-                        ${this.generateHourOptions()}
-                    </select>
-                    <span class="time-picker-unit">時</span>
+                    <button type="button" class="time-picker-btn time-picker-hour-up" aria-label="時を増やす">▲</button>
+                    <div class="time-picker-display-wrapper">
+                        <span class="time-picker-display time-picker-hour-display">13</span>
+                        <span class="time-picker-unit">時</span>
+                    </div>
+                    <button type="button" class="time-picker-btn time-picker-hour-down" aria-label="時を減らす">▼</button>
                 </div>
 
                 <span class="time-picker-separator">:</span>
 
                 <div class="time-picker-group">
-                    <label class="time-picker-label">分</label>
-                    <select class="time-picker-select time-picker-minute" aria-label="分">
-                        ${minuteOptions}
-                    </select>
-                    <span class="time-picker-unit">分</span>
+                    <button type="button" class="time-picker-btn time-picker-minute-up" aria-label="分を増やす">▲</button>
+                    <div class="time-picker-display-wrapper">
+                        <span class="time-picker-display time-picker-minute-display">00</span>
+                        <span class="time-picker-unit">分</span>
+                    </div>
+                    <button type="button" class="time-picker-btn time-picker-minute-down" aria-label="分を減らす">▼</button>
                 </div>
 
-                ${this.options.allowCustomMinute ? `
-                <div class="time-picker-custom">
-                    <label class="time-picker-custom-label">
-                        <input type="checkbox" class="time-picker-custom-toggle">
-                        カスタム入力
+                ${this.options.allowAsap ? `
+                <div class="time-picker-asap">
+                    <label class="time-picker-asap-label">
+                        <input type="checkbox" class="time-picker-asap-toggle">
+                        なる早
                     </label>
-                    <input type="number" class="time-picker-custom-input"
-                           min="0" max="59" step="1"
-                           placeholder="0-59"
-                           aria-label="カスタム分"
-                           disabled>
                 </div>
                 ` : ''}
             </div>
         `;
 
         // 初期値をセット
-        this.setTime(this.options.defaultHour, this.options.defaultMinute);
+        this.currentHour = this.options.defaultHour;
+        this.currentMinute = this.options.defaultMinute;
+        this.updateDisplay();
     }
 
     generateHourOptions() {
@@ -86,40 +83,67 @@ class TimePicker {
     }
 
     attachEvents() {
-        const hourSelect = this.container.querySelector('.time-picker-hour');
-        const minuteSelect = this.container.querySelector('.time-picker-minute');
+        const hourUpBtn = this.container.querySelector('.time-picker-hour-up');
+        const hourDownBtn = this.container.querySelector('.time-picker-hour-down');
+        const minuteUpBtn = this.container.querySelector('.time-picker-minute-up');
+        const minuteDownBtn = this.container.querySelector('.time-picker-minute-down');
 
-        if (hourSelect) {
-            hourSelect.addEventListener('change', () => this.handleChange());
+        if (hourUpBtn) {
+            hourUpBtn.addEventListener('click', () => {
+                this.currentHour = (this.currentHour + 1) % 24;
+                this.updateDisplay();
+                this.handleChange();
+            });
         }
 
-        if (minuteSelect) {
-            minuteSelect.addEventListener('change', () => this.handleChange());
+        if (hourDownBtn) {
+            hourDownBtn.addEventListener('click', () => {
+                this.currentHour = (this.currentHour - 1 + 24) % 24;
+                this.updateDisplay();
+                this.handleChange();
+            });
         }
 
-        if (this.options.allowCustomMinute) {
-            const customToggle = this.container.querySelector('.time-picker-custom-toggle');
-            const customInput = this.container.querySelector('.time-picker-custom-input');
+        if (minuteUpBtn) {
+            minuteUpBtn.addEventListener('click', () => {
+                this.currentMinute = (this.currentMinute + this.options.minuteStep) % 60;
+                this.updateDisplay();
+                this.handleChange();
+            });
+        }
 
-            if (customToggle && customInput) {
-                customToggle.addEventListener('change', (e) => {
-                    const isCustom = e.target.checked;
-                    customInput.disabled = !isCustom;
-                    minuteSelect.disabled = isCustom;
+        if (minuteDownBtn) {
+            minuteDownBtn.addEventListener('click', () => {
+                this.currentMinute = (this.currentMinute - this.options.minuteStep + 60) % 60;
+                this.updateDisplay();
+                this.handleChange();
+            });
+        }
 
-                    if (isCustom) {
-                        customInput.focus();
-                    } else {
-                        this.handleChange();
-                    }
-                });
+        if (this.options.allowAsap) {
+            const asapToggle = this.container.querySelector('.time-picker-asap-toggle');
 
-                customInput.addEventListener('input', () => {
-                    if (!customInput.disabled) {
-                        this.handleChange();
-                    }
+            if (asapToggle) {
+                asapToggle.addEventListener('change', (e) => {
+                    const isAsap = e.target.checked;
+                    const buttons = this.container.querySelectorAll('.time-picker-btn');
+                    buttons.forEach(btn => btn.disabled = isAsap);
+                    this.handleChange();
                 });
             }
+        }
+    }
+
+    updateDisplay() {
+        const hourDisplay = this.container.querySelector('.time-picker-hour-display');
+        const minuteDisplay = this.container.querySelector('.time-picker-minute-display');
+
+        if (hourDisplay) {
+            hourDisplay.textContent = this.currentHour.toString().padStart(2, '0');
+        }
+
+        if (minuteDisplay) {
+            minuteDisplay.textContent = this.currentMinute.toString().padStart(2, '0');
         }
     }
 
@@ -131,18 +155,10 @@ class TimePicker {
     }
 
     setTime(hour, minute) {
-        const hourSelect = this.container.querySelector('.time-picker-hour');
-        const minuteSelect = this.container.querySelector('.time-picker-minute');
-
-        if (hourSelect) {
-            hourSelect.value = hour;
-        }
-
-        if (minuteSelect) {
-            // 15分刻みに丸める
-            const roundedMinute = Math.round(minute / this.options.minuteStep) * this.options.minuteStep;
-            minuteSelect.value = roundedMinute;
-        }
+        this.currentHour = hour;
+        // 15分刻みに丸める
+        this.currentMinute = Math.round(minute / this.options.minuteStep) * this.options.minuteStep;
+        this.updateDisplay();
     }
 
     setTimeFromString(timeString) {
@@ -152,28 +168,27 @@ class TimePicker {
     }
 
     getTime() {
-        const hourSelect = this.container.querySelector('.time-picker-hour');
-        const minuteSelect = this.container.querySelector('.time-picker-minute');
-        const customToggle = this.container.querySelector('.time-picker-custom-toggle');
-        const customInput = this.container.querySelector('.time-picker-custom-input');
+        const asapToggle = this.container.querySelector('.time-picker-asap-toggle');
 
-        let hour = parseInt(hourSelect.value);
-        let minute;
-
-        if (customToggle && customToggle.checked) {
-            minute = parseInt(customInput.value) || 0;
-        } else {
-            minute = parseInt(minuteSelect.value);
+        // なる早モードの場合
+        if (asapToggle && asapToggle.checked) {
+            return {
+                hour: null,
+                minute: null,
+                formatted: 'なるべく早めに出勤',
+                isAsap: true
+            };
         }
 
         // バリデーション
-        hour = Math.max(0, Math.min(23, hour));
-        minute = Math.max(0, Math.min(59, minute));
+        const hour = Math.max(0, Math.min(23, this.currentHour));
+        const minute = Math.max(0, Math.min(59, this.currentMinute));
 
         return {
             hour,
             minute,
-            formatted: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+            formatted: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
+            isAsap: false
         };
     }
 

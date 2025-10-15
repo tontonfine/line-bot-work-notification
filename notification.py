@@ -62,6 +62,12 @@ def send_late_reply_notification(employee_name, reply_text):
     send_to_managers(message)
     print(f"📨 {employee_name}の遅延返信を通知しました")
 
+def send_all_replied_notification(employee_name, reply_time):
+    """全員返信完了の即時通知"""
+    message = f"✅ 全員分の返信が集まりました\n\n最後の返信:\n{employee_name}さん {reply_time}"
+    send_to_managers(message)
+    print(f"✅ 全員返信完了を通知しました（最後: {employee_name}）")
+
 def send_second_reminder_alert(not_replied_list):
     """14:00時点の未返信通知"""
     if not not_replied_list:

@@ -2,16 +2,32 @@ import sqlite3
 from datetime import datetime
 import os
 import hashlib
+import bcrypt
+import secrets
 
 DB_PATH = 'database.db'
 
 def hash_password(password):
-    """パスワードをSHA256でハッシュ化"""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """パスワードをbcryptでハッシュ化（強力な暗号化）"""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 def check_password(password, password_hash):
-    """パスワードを検証"""
-    return hash_password(password) == password_hash
+    """パスワードを検証（bcryptとSHA256の両方をサポート - 後方互換性）"""
+    try:
+        # bcryptハッシュかどうか確認（$2b$で始まる）
+        if password_hash.startswith('$2b$') or password_hash.startswith('$2a$') or password_hash.startswith('$2y$'):
+            return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+        else:
+            # 旧SHA256ハッシュの場合（後方互換性のため）
+            sha256_hash = hashlib.sha256(password.encode()).hexdigest()
+            return sha256_hash == password_hash
+    except Exception as e:
+        print(f"パスワード検証エラー: {e}")
+        return False
+
+def generate_secure_password(length=16):
+    """安全なランダムパスワードを生成"""
+    return secrets.token_urlsafe(length)
 
 def init_db():
     """データベースを初期化"""
@@ -111,6 +127,10 @@ def migrate_database():
             cursor.execute("ALTER TABLE work_schedules ADD COLUMN second_reminder_sent_at TIMESTAMP")
             print("✅ work_schedules.second_reminder_sent_at カラム追加")
 
+        if 'message_content' not in columns:
+            cursor.execute("ALTER TABLE work_schedules ADD COLUMN message_content TEXT")
+            print("✅ work_schedules.message_content カラム追加")
+
         # 3. replies テーブルに is_late_reply フラグを追加
         cursor.execute("PRAGMA table_info(replies)")
         columns = [column[1] for column in cursor.fetchall()]
@@ -141,21 +161,37 @@ def migrate_database():
 
         cursor.execute("SELECT COUNT(*) FROM system_settings WHERE setting_key='admin_password_hash'")
         if cursor.fetchone()[0] == 0:
-            initial_password_hash = hash_password('kyoshoran')
+            # セキュアなランダムパスワード生成
+            admin_password = generate_secure_password(16)
+            initial_password_hash = hash_password(admin_password)
             cursor.execute(
                 "INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?)",
                 ('admin_password_hash', initial_password_hash)
             )
-            print("✅ 初期設定: admin_password_hash (パスワード: kyoshoran)")
+            print("\n" + "="*70)
+            print("🔐 【重要】初期管理者パスワードが生成されました")
+            print("="*70)
+            print(f"   管理者パスワード: {admin_password}")
+            print("   ⚠️  このパスワードは二度と表示されません！")
+            print("   ⚠️  今すぐ安全な場所に保存してください！")
+            print("="*70 + "\n")
 
         cursor.execute("SELECT COUNT(*) FROM system_settings WHERE setting_key='employee_mgmt_password_hash'")
         if cursor.fetchone()[0] == 0:
-            employee_mgmt_hash = hash_password('admin')
+            # セキュアなランダムパスワード生成
+            employee_mgmt_password = generate_secure_password(16)
+            employee_mgmt_hash = hash_password(employee_mgmt_password)
             cursor.execute(
                 "INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?)",
                 ('employee_mgmt_password_hash', employee_mgmt_hash)
             )
-            print("✅ 初期設定: employee_mgmt_password_hash (パスワード: admin)")
+            print("="*70)
+            print("🔐 【重要】従業員管理パスワードが生成されました")
+            print("="*70)
+            print(f"   従業員管理パスワード: {employee_mgmt_password}")
+            print("   ⚠️  このパスワードは二度と表示されません！")
+            print("   ⚠️  今すぐ安全な場所に保存してください！")
+            print("="*70 + "\n")
 
         # 5. notification_managers テーブル作成
         cursor.execute('''
@@ -210,14 +246,14 @@ def get_db_connection():
     return conn
 
 # 従業員関連の関数
-def add_employee(name, employee_number, line_user_id=None):
+def add_employee(name, employee_number, line_user_id=None, employee_type='part_time'):
     """従業員を追加"""
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(
-            'INSERT INTO employees (name, employee_number, line_user_id) VALUES (?, ?, ?)',
-            (name, employee_number, line_user_id)
+            'INSERT INTO employees (name, employee_number, line_user_id, employee_type) VALUES (?, ?, ?, ?)',
+            (name, employee_number, line_user_id, employee_type)
         )
         conn.commit()
         return cursor.lastrowid
@@ -322,15 +358,15 @@ def delete_workplace(workplace_id):
     return affected > 0
 
 # 勤務予定関連の関数
-def add_work_schedule(employee_id, work_date, workplace, work_time):
+def add_work_schedule(employee_id, work_date, workplace, work_time, message_content=None):
     """勤務予定を追加"""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
         '''INSERT INTO work_schedules
-           (employee_id, work_date, workplace, work_time, sent_at)
-           VALUES (?, ?, ?, ?, ?)''',
-        (employee_id, work_date, workplace, work_time, datetime.now())
+           (employee_id, work_date, workplace, work_time, sent_at, message_content)
+           VALUES (?, ?, ?, ?, ?, ?)''',
+        (employee_id, work_date, workplace, work_time, datetime.now(), message_content)
     )
     conn.commit()
     schedule_id = cursor.lastrowid
@@ -632,6 +668,16 @@ def get_latest_pending_schedule(employee_id):
     conn.close()
     return schedule
 
+def get_schedule_message_content(schedule_id):
+    """勤務予定のメッセージ内容を取得"""
+    conn = get_db_connection()
+    schedule = conn.execute(
+        'SELECT message_content FROM work_schedules WHERE id = ?',
+        (schedule_id,)
+    ).fetchone()
+    conn.close()
+    return schedule['message_content'] if schedule else None
+
 def get_today_schedules_by_reply_status():
     """本日送信分の勤務予定を返信状況別に取得"""
     conn = get_db_connection()
@@ -697,6 +743,37 @@ def update_employee_active_status(employee_id, is_active):
     affected = cursor.rowcount
     conn.close()
     return affected > 0
+
+def check_all_replied_today():
+    """本日送信分の勤務連絡に全員が返信済みかチェック
+
+    Returns:
+        tuple: (all_replied: bool, total_count: int, replied_count: int)
+    """
+    conn = get_db_connection()
+    today = str(datetime.now().date())
+
+    # 本日送信した全勤務予定を取得
+    all_schedules = conn.execute(
+        '''SELECT ws.id, ws.reply_status, e.name as employee_name
+           FROM work_schedules ws
+           JOIN employees e ON ws.employee_id = e.id
+           WHERE DATE(ws.sent_at) = ?''',
+        (today,)
+    ).fetchall()
+
+    conn.close()
+
+    if not all_schedules:
+        # 本日の送信がない場合
+        return False, 0, 0
+
+    total_count = len(all_schedules)
+    replied_count = sum(1 for s in all_schedules if s['reply_status'] in ['replied', 'late_replied'])
+
+    all_replied = (replied_count == total_count)
+
+    return all_replied, total_count, replied_count
 
 if __name__ == '__main__':
     # データベース初期化

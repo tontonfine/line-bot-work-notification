@@ -2,124 +2,1036 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>従業員管理</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* ===== CSS Reset & Base ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* iOS Color System */
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-red: #FF3B30;
+            --ios-orange: #FF9500;
+            --ios-gray: #8E8E93;
+            --ios-gray-2: #AEAEB2;
+            --ios-gray-3: #C7C7CC;
+            --ios-gray-4: #D1D1D6;
+            --ios-gray-5: #E5E5EA;
+            --ios-gray-6: #F2F2F7;
+
+            /* Semantic Colors */
+            --primary: var(--ios-blue);
+            --success: var(--ios-green);
+            --danger: var(--ios-red);
+            --warning: var(--ios-orange);
+            --background: var(--ios-gray-6);
+            --card-bg: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: var(--ios-gray);
+            --border: var(--ios-gray-5);
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 16px;
+            --spacing-xl: 24px;
+
+            /* Typography */
+            --font-size-sm: 13px;
+            --font-size-md: 15px;
+            --font-size-lg: 17px;
+            --font-size-xl: 20px;
+
+            /* iOS Specific */
+            --tap-target-min: 44px;
+            --card-radius: 10px;
+            --safe-area-top: env(safe-area-inset-top);
+            --safe-area-bottom: env(safe-area-inset-bottom);
+            --safe-area-left: env(safe-area-inset-left);
+            --safe-area-right: env(safe-area-inset-right);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            font-size: var(--font-size-md);
+            line-height: 1.5;
+            padding-top: calc(60px + var(--safe-area-top));
+            padding-bottom: calc(140px + var(--safe-area-bottom));
+            padding-left: var(--safe-area-left);
+            padding-right: var(--safe-area-right);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            touch-action: manipulation;
+        }
+
+        /* ===== Fixed Header ===== */
+        .fixed-header {
+            position: fixed;
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            z-index: 1000;
+            box-shadow: 0 1px 0 var(--border);
+        }
+
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .nav-title {
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .icon-btn {
+            width: var(--tap-target-min);
+            height: var(--tap-target-min);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 150ms;
+        }
+
+        .icon-btn:active {
+            background: var(--ios-gray-5);
+        }
+
+        /* ===== Search Bar ===== */
+        .search-bar {
+            display: none;
+            padding: var(--spacing-md) var(--spacing-lg);
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-bar.show {
+            display: block;
+            animation: slideDown 200ms ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 36px;
+            padding: 0 var(--spacing-md) 0 36px;
+            border: none;
+            border-radius: 10px;
+            background: var(--ios-gray-6);
+            font-size: var(--font-size-md);
+            transition: background 150ms;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: var(--ios-gray-5);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--ios-gray);
+            color: white;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-clear.show {
+            display: flex;
+        }
+
+        /* ===== Filter Chips ===== */
+        .filter-bar {
+            display: none;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-bar.show {
+            display: block;
+        }
+
+        .filter-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            margin-right: var(--spacing-sm);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 150ms;
+        }
+
+        .filter-chip:active {
+            transform: scale(0.95);
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ===== Search Highlight ===== */
+        .highlight {
+            background: rgba(255, 204, 0, 0.3);
+            font-weight: 600;
+        }
+
+        /* ===== Fixed Tab Bar ===== */
+        .tab-bar {
+            position: fixed;
+            bottom: var(--safe-area-bottom);
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            display: flex;
+            z-index: 1000;
+        }
+
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: color 150ms;
+        }
+
+        .tab-item.active {
+            color: var(--primary);
+        }
+
+        .tab-icon {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        /* ===== Container ===== */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--card-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* ===== Employee Cards ===== */
+        .employee-card {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: var(--card-radius);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 300ms cubic-bezier(0.4, 0.0, 0.2, 1),
+                        box-shadow 150ms,
+                        opacity 300ms;
+            overflow: hidden;
+        }
+
+        .employee-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+
+        .employee-card.retired {
+            background: var(--ios-gray-6);
+            opacity: 0.5;
+        }
+
+        .employee-card.retired .employee-name,
+        .employee-card.retired .employee-meta {
+            color: var(--ios-gray);
+        }
+
+        .employee-card.retired .badge {
+            opacity: 0.6;
+        }
+
+        .employee-card.swiping {
+            transition: none;
+        }
+
+        .employee-card.deleting {
+            animation: slideOutRight 400ms cubic-bezier(0.4, 0.0, 1, 1) forwards;
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Swipe Actions Background */
+        .swipe-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            padding-right: var(--spacing-lg);
+            background: var(--danger);
+            border-radius: var(--card-radius);
+            pointer-events: none;
+            transition: width 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .swipe-action-icon {
+            color: white;
+            font-size: 24px;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 200ms, transform 200ms;
+        }
+
+        .swipe-actions.visible .swipe-action-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .employee-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .employee-name {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .employee-meta {
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .employee-number {
+            background: var(--ios-gray-6);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+        }
+
+        .employee-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .info-icon {
+            width: 24px;
+            text-align: center;
+        }
+
+        /* ===== Badges ===== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+        }
+
+        .badge-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .badge-secondary {
+            background: var(--ios-gray);
+            color: white;
+        }
+
+        .badge-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            min-height: 48px;
+            padding: 0 var(--spacing-lg);
+            border: none;
+            border-radius: 10px;
+            font-size: var(--font-size-md);
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: opacity 150ms, transform 150ms;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            min-height: 36px;
+            padding: 0 var(--spacing-md);
+            font-size: var(--font-size-sm);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== Button Group ===== */
+        .btn-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        /* ===== Forms ===== */
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            min-height: 48px;
+            padding: 0 var(--spacing-md);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: var(--font-size-md);
+            background: var(--card-bg);
+            transition: border-color 150ms;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-hint {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--spacing-xs);
+        }
+
+        /* ===== Floating Action Button ===== */
+        .fab {
+            position: fixed;
+            right: var(--spacing-lg);
+            bottom: calc(80px + var(--safe-area-bottom));
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 150ms, box-shadow 150ms;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+
+        /* ===== Modal ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            display: none;
+            align-items: flex-end;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-height: 80vh;
+            background: var(--card-bg);
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
+            overflow-y: auto;
+            animation: slideUp 300ms ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+
+        /* ===== Alert Messages ===== */
+        .alert {
+            padding: var(--spacing-md);
+            border-radius: var(--card-radius);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: flex-start;
+        }
+
+        .alert-success {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--success);
+        }
+
+        .alert-danger {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--danger);
+        }
+
+        /* ===== Loading Spinner ===== */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--ios-gray-5);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-lg);
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* ===== Action Sheet (iOS Style) ===== */
+        .action-sheet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 3000;
+            display: none;
+            align-items: flex-end;
+            padding: var(--spacing-lg);
+            padding-bottom: calc(var(--spacing-lg) + var(--safe-area-bottom));
+        }
+
+        .action-sheet-overlay.show {
+            display: flex;
+            animation: fadeIn 200ms ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .action-sheet {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            animation: slideUpSheet 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        @keyframes slideUpSheet {
+            from {
+                opacity: 0;
+                transform: translateY(100px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .action-sheet-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .action-sheet-header {
+            padding: var(--spacing-lg);
+            text-align: center;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .action-sheet-title {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .action-sheet-message {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .action-sheet-button {
+            width: 100%;
+            min-height: 56px;
+            background: none;
+            border: none;
+            border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+            font-size: var(--font-size-lg);
+            cursor: pointer;
+            transition: background 150ms;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .action-sheet-button:first-child {
+            border-top: none;
+        }
+
+        .action-sheet-button:active {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .action-sheet-button.destructive {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .action-sheet-cancel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .action-sheet-cancel .action-sheet-button {
+            font-weight: 600;
+            color: var(--primary);
+            border-top: none;
+        }
+
+        /* ===== Responsive ===== */
+        @media (min-width: 768px) {
+            .container {
+                padding: var(--spacing-xl);
+            }
+
+            .fab {
+                bottom: calc(var(--spacing-xl) + var(--safe-area-bottom));
+            }
+        }
+
+        /* ===== Utility Classes ===== */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+
+        .mt-sm { margin-top: var(--spacing-sm); }
+        .mt-md { margin-top: var(--spacing-md); }
+        .mt-lg { margin-top: var(--spacing-lg); }
+        .mb-sm { margin-bottom: var(--spacing-sm); }
+        .mb-md { margin-bottom: var(--spacing-md); }
+        .mb-lg { margin-bottom: var(--spacing-lg); }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-primary">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">👥 従業員管理</span>
-            <div>
-                <a href="{{ url_for('settings') }}" class="btn btn-light btn-sm me-2">⚙️ 設定</a>
-                <a href="{{ url_for('index') }}" class="btn btn-light btn-sm">送信画面に戻る</a>
+    <!-- Fixed Header -->
+    <div class="fixed-header">
+        <div class="nav-bar">
+            <div class="nav-title">👥 従業員管理</div>
+            <div class="nav-actions">
+                <button class="icon-btn" onclick="toggleSearch()" title="検索" id="searchToggleBtn">
+                    🔍
+                </button>
+                <button class="icon-btn" onclick="window.location.href='{{ url_for('settings') }}'" title="設定">
+                    ⚙️
+                </button>
+                <button class="icon-btn" onclick="window.location.href='{{ url_for('index') }}'" title="送信画面">
+                    📨
+                </button>
             </div>
         </div>
-    </nav>
 
-    <div class="container mt-4">
-        <!-- 従業員追加フォーム -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0">➕ 新規従業員追加</h5>
+        <!-- Search Bar -->
+        <div class="search-bar" id="searchBar">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text"
+                       class="search-input"
+                       id="searchInput"
+                       placeholder="名前または従業員番号で検索"
+                       oninput="handleSearch()">
+                <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
             </div>
-            <div class="card-body">
-                <form id="addEmployeeForm">
-                    <div class="row">
-                        <div class="col-md-5">
-                            <label class="form-label">従業員名</label>
-                            <input type="text" class="form-control" id="employeeName" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">従業員番号</label>
-                            <select class="form-select" id="employeeNumber" required>
-                                <option value="">読み込み中...</option>
-                            </select>
-                            <small class="text-muted">使用可能な番号から選択</small>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button type="submit" class="btn btn-success w-100">追加</button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-chip active" data-filter="status" data-value="active" onclick="toggleFilter(this)">
+                ✓ 在籍中
+            </button>
+            <button class="filter-chip" data-filter="status" data-value="all" onclick="toggleFilter(this)">
+                📋 全員
+            </button>
+            <button class="filter-chip" data-filter="type" data-value="all" onclick="toggleFilter(this)">
+                すべて
+            </button>
+            <button class="filter-chip" data-filter="type" data-value="full_time" onclick="toggleFilter(this)">
+                正社員のみ
+            </button>
+            <button class="filter-chip" data-filter="type" data-value="part_time" onclick="toggleFilter(this)">
+                アルバイトのみ
+            </button>
+            <button class="filter-chip" data-filter="line" data-value="all" onclick="toggleFilter(this)">
+                LINE: すべて
+            </button>
+            <button class="filter-chip" data-filter="line" data-value="registered" onclick="toggleFilter(this)">
+                LINE: 登録済み
+            </button>
+            <button class="filter-chip" data-filter="line" data-value="unregistered" onclick="toggleFilter(this)">
+                LINE: 未登録
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Employee Count -->
+        <div style="padding: var(--spacing-md) 0; color: var(--text-secondary); font-size: var(--font-size-sm);">
+            従業員 <span id="employeeCount">{{ employees|length }}</span>名
+        </div>
+
+        <!-- Employee Cards -->
+        <div id="employeeList">
+            {% for employee in employees %}
+            <div class="employee-card {% if not employee.is_active %}retired{% endif %}"
+                 data-id="{{ employee.id }}"
+                 data-active="{{ employee.is_active }}"
+                 data-type="{{ employee.employee_type }}"
+                 data-number="{{ employee.employee_number }}"
+                 data-name="{{ employee.name }}"
+                 data-line-registered="{{ 'true' if employee.line_user_id else 'false' }}"
+                 onclick="showEmployeeDetail({{ employee.id }})">
+
+                <div class="employee-header">
+                    <div style="flex: 1;">
+                        <div class="employee-name">{{ employee.name }}</div>
+                        <div class="employee-meta">
+                            <span class="employee-number">{{ employee.employee_number }}</span>
+                            <span class="badge {% if employee.employee_type == 'part_time' %}badge-primary{% else %}badge-secondary{% endif %}">
+                                {{ 'アルバイト' if employee.employee_type == 'part_time' else '正社員' }}
+                            </span>
+                            {% if employee.line_user_id %}
+                            <span class="badge badge-success">📱 登録済み</span>
+                            {% else %}
+                            <span class="badge badge-warning">📱 未登録</span>
+                            {% endif %}
                         </div>
                     </div>
-                    <small class="text-muted">※ 追加後、従業員はLIFFから登録してLINEユーザーIDを紐付けてください</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if employees|length == 0 %}
+        <div class="empty-state">
+            <div class="empty-icon">👥</div>
+            <div>従業員が登録されていません</div>
+            <div class="form-hint mt-sm">スプレッドシートから同期するか、新規追加してください</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="showAddEmployeeModal()" title="従業員を追加">
+        ➕
+    </button>
+
+    <!-- Action Bar -->
+    <div class="tab-bar">
+        <button class="tab-item" onclick="syncEmployeesFromSheet()">
+            <div class="tab-icon">🔄</div>
+            <div>同期</div>
+        </button>
+        <button class="tab-item" onclick="showLiffUrlModal()">
+            <div class="tab-icon">📱</div>
+            <div>登録URL</div>
+        </button>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div class="modal-overlay" id="addEmployeeModal" onclick="closeModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">新規従業員追加</div>
+                <button class="icon-btn" onclick="closeAddEmployeeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmployeeForm">
+                    <div class="form-group">
+                        <label class="form-label">従業員名</label>
+                        <input type="text" class="form-control" id="employeeName" placeholder="例: 山田 太郎" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">従業員番号</label>
+                        <select class="form-control" id="employeeNumber" required>
+                            <option value="">読み込み中...</option>
+                        </select>
+                        <div class="form-hint">使用可能な番号から選択してください</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">雇用形態</label>
+                        <select class="form-control" id="employeeType" required>
+                            <option value="part_time">アルバイト</option>
+                            <option value="full_time">正社員</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        追加する
+                    </button>
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- 従業員一覧 -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">📋 従業員一覧（{{ employees|length }}名）</h5>
+    <!-- Employee Detail Modal -->
+    <div class="modal-overlay" id="employeeDetailModal" onclick="closeDetailModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="detailModalTitle">従業員詳細</div>
+                <button class="icon-btn" onclick="closeDetailModal()">✕</button>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>従業員名</th>
-                                <th>従業員番号</th>
-                                <th>種別</th>
-                                <th>LINE登録状態</th>
-                                <th>在籍状況</th>
-                                <th>登録日</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for employee in employees %}
-                            <tr id="emp-row-{{ employee.id }}" {% if not employee.is_active %}style="opacity: 0.5; background-color: #f8f9fa;"{% endif %}>
-                                <td>{{ employee.id }}</td>
-                                <td>{{ employee.name }}</td>
-                                <td><code>{{ employee.employee_number }}</code></td>
-                                <td>
-                                    <span class="badge bg-{% if employee.employee_type == 'part_time' %}primary{% else %}secondary{% endif %} rounded-pill">
-                                        {{ 'アルバイト' if employee.employee_type == 'part_time' else '社員' }}
-                                    </span>
-                                    <br>
-                                    <button class="btn btn-xs btn-sm btn-outline-{% if employee.employee_type == 'part_time' %}secondary{% else %}primary{% endif %} mt-1"
-                                            onclick="changeEmployeeType({{ employee.id }}, '{% if employee.employee_type == 'part_time' %}full_time{% else %}part_time{% endif %}')">
-                                        {% if employee.employee_type == 'part_time' %}→ 社員{% else %}→ バイト{% endif %}
-                                    </button>
-                                </td>
-                                <td>
-                                    {% if employee.line_user_id %}
-                                    <span class="badge bg-success">✓ 登録済み</span>
-                                    {% else %}
-                                    <span class="badge bg-warning">未登録</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge bg-{% if employee.is_active %}success{% else %}secondary{% endif %}" id="status-badge-{{ employee.id }}">
-                                        {% if employee.is_active %}✓ 在籍中{% else %}退職{% endif %}
-                                    </span>
-                                </td>
-                                <td>{{ employee.created_at }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-{% if employee.is_active %}danger{% else %}success{% endif %}"
-                                            id="status-btn-{{ employee.id }}"
-                                            onclick="toggleEmployeeStatus({{ employee.id }}, {{ employee.is_active }})">
-                                        {% if employee.is_active %}退職処理{% else %}再雇用{% endif %}
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="modal-body">
+                <div id="employeeDetailContent">
+                    <!-- Dynamic content will be inserted here -->
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- LIFF登録案内 -->
-        <div class="card mt-4">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">📢 従業員の皆様へ</h5>
+    <!-- LIFF URL Modal -->
+    <div class="modal-overlay" id="liffUrlModal" onclick="closeLiffUrlModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">📱 従業員登録URL</div>
+                <button class="icon-btn" onclick="closeLiffUrlModal()">✕</button>
             </div>
-            <div class="card-body">
-                <p>勤務連絡を受け取るには、LINE公式アカウントを友だち追加後、以下のURLから登録してください：</p>
-                <div class="input-group">
-                    <input type="text" class="form-control" value="https://liff.line.me/{{ liff_id }}" readonly id="liffUrl">
-                    <button class="btn btn-outline-secondary" type="button" onclick="copyLiffUrl()">
+            <div class="modal-body">
+                <div class="card-description" style="margin-bottom: var(--spacing-lg);">
+                    LINE友だち追加後、このURLから登録してください
+                </div>
+                <div style="display: flex; gap: var(--spacing-sm);">
+                    <input type="text" class="form-control" value="https://liff.line.me/{{ liff_id }}" readonly id="liffUrlInput" style="flex: 1;">
+                    <button class="btn btn-outline" onclick="copyLiffUrl()" style="min-width: 80px;">
                         📋 コピー
                     </button>
                 </div>
@@ -127,9 +1039,621 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Action Sheet -->
+    <div class="action-sheet-overlay" id="actionSheet" onclick="closeActionSheet(event)">
+        <div class="action-sheet" onclick="event.stopPropagation()">
+            <div class="action-sheet-content">
+                <div class="action-sheet-header">
+                    <div class="action-sheet-title" id="actionSheetTitle">従業員を削除</div>
+                    <div class="action-sheet-message" id="actionSheetMessage">データベースから削除され、従業員番号は再利用可能になります</div>
+                </div>
+                <div id="actionSheetButtons"></div>
+            </div>
+            <div class="action-sheet-cancel">
+                <button class="action-sheet-button" onclick="closeActionSheet()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Action Sheet -->
+    <div class="action-sheet-overlay" id="passwordSheet" onclick="closePasswordSheet(event)">
+        <div class="action-sheet" onclick="event.stopPropagation()">
+            <div class="action-sheet-content">
+                <div class="action-sheet-header">
+                    <div class="action-sheet-title">削除にはパスワードが必要です</div>
+                    <div class="action-sheet-message">管理者パスワードを入力してください</div>
+                </div>
+                <div style="padding: var(--spacing-lg);">
+                    <input type="password"
+                           id="deletePassword"
+                           class="form-control"
+                           placeholder="パスワードを入力"
+                           autocomplete="off">
+                </div>
+                <button class="action-sheet-button" onclick="verifyPasswordAndDelete()">
+                    <span>確認</span>
+                </button>
+            </div>
+            <div class="action-sheet-cancel">
+                <button class="action-sheet-button" onclick="closePasswordSheet()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ページロード時に使用可能な従業員番号を取得
+        // ===== Global State =====
+        let passwordAuthState = {
+            authenticated: false,
+            expiryTime: null,
+            pendingDeleteId: null,
+            pendingDeleteName: null
+        };
+
+        let filterState = {
+            status: 'active',   // active, all
+            type: 'all',        // all, full_time, part_time
+            line: 'all',        // all, registered, unregistered
+            search: ''
+        };
+
+        // ===== Initialization =====
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAvailableNumbers();
+            initializeSwipeGestures();
+            // Sort cards on initial load
+            sortAndDisplayCards();
+            applyFilters();
+        });
+
+        function sortAndDisplayCards() {
+            const cards = document.querySelectorAll('.employee-card');
+            const employeeList = document.getElementById('employeeList');
+
+            // Convert NodeList to Array for sorting
+            const cardsArray = Array.from(cards);
+
+            // Sort cards: 在籍状況 > 雇用形態 > 従業員番号
+            cardsArray.sort((a, b) => {
+                // 1. 在籍状況で比較（在籍中=1が上）
+                const aActive = parseInt(a.getAttribute('data-active'));
+                const bActive = parseInt(b.getAttribute('data-active'));
+                if (aActive !== bActive) {
+                    return bActive - aActive; // 降順（1が先）
+                }
+
+                // 2. 雇用形態で比較（正社員=full_timeが上）
+                const aType = a.getAttribute('data-type');
+                const bType = b.getAttribute('data-type');
+                if (aType !== bType) {
+                    const aTypeNum = aType === 'full_time' ? 0 : 1;
+                    const bTypeNum = bType === 'full_time' ? 0 : 1;
+                    return aTypeNum - bTypeNum; // 昇順（0が先）
+                }
+
+                // 3. 従業員番号で比較（数値部分で昇順）
+                const aNum = a.getAttribute('data-number');
+                const bNum = b.getAttribute('data-number');
+                // k00002 → 2, k00016 → 16 のように数値に変換してソート
+                const aNumValue = parseInt(aNum.substring(1));  // "k"を除いて数値化
+                const bNumValue = parseInt(bNum.substring(1));
+                return aNumValue - bNumValue;
+            });
+
+            // Re-append sorted cards
+            cardsArray.forEach(card => {
+                employeeList.appendChild(card);
+            });
+        }
+
+        // ===== Search & Filter =====
+        function toggleSearch() {
+            const searchBar = document.getElementById('searchBar');
+            const filterBar = document.getElementById('filterBar');
+            const searchInput = document.getElementById('searchInput');
+
+            if (searchBar.classList.contains('show')) {
+                searchBar.classList.remove('show');
+                filterBar.classList.remove('show');
+                clearSearch();
+            } else {
+                searchBar.classList.add('show');
+                filterBar.classList.add('show');
+                setTimeout(() => searchInput.focus(), 300);
+            }
+        }
+
+        function handleSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            const searchQuery = searchInput.value.trim();
+
+            // Show/hide clear button
+            if (searchQuery) {
+                searchClear.classList.add('show');
+            } else {
+                searchClear.classList.remove('show');
+            }
+
+            filterState.search = searchQuery;
+            applyFilters();
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+
+            searchInput.value = '';
+            searchClear.classList.remove('show');
+            filterState.search = '';
+            applyFilters();
+        }
+
+        function toggleFilter(chipElement) {
+            const filterType = chipElement.getAttribute('data-filter');
+            const filterValue = chipElement.getAttribute('data-value');
+
+            // Remove active class from same filter type
+            const sameTypeChips = document.querySelectorAll(`[data-filter="${filterType}"]`);
+            sameTypeChips.forEach(chip => chip.classList.remove('active'));
+
+            // Add active class to clicked chip
+            chipElement.classList.add('active');
+
+            // Update filter state
+            filterState[filterType] = filterValue;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const cards = document.querySelectorAll('.employee-card');
+            const searchQuery = filterState.search.toLowerCase();
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const number = card.getAttribute('data-number').toLowerCase();
+                const type = card.getAttribute('data-type');
+                const lineRegistered = card.getAttribute('data-line-registered') === 'true';
+                const isActive = card.getAttribute('data-active') === '1';
+
+                // Status filter (在籍中 or 全員)
+                if (filterState.status === 'active' && !isActive) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                // Search filter
+                const matchesSearch = !searchQuery || name.includes(searchQuery) || number.includes(searchQuery);
+
+                // Type filter
+                const matchesType = filterState.type === 'all' || filterState.type === type;
+
+                // LINE filter
+                let matchesLine = true;
+                if (filterState.line === 'registered') {
+                    matchesLine = lineRegistered;
+                } else if (filterState.line === 'unregistered') {
+                    matchesLine = !lineRegistered;
+                }
+
+                // Apply combined filters
+                if (matchesSearch && matchesType && matchesLine) {
+                    card.style.display = '';
+                    visibleCount++;
+
+                    // Highlight search results
+                    if (searchQuery) {
+                        highlightSearchTerm(card, searchQuery);
+                    } else {
+                        removeHighlight(card);
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('employeeCount').textContent = visibleCount;
+        }
+
+        function highlightSearchTerm(card, searchQuery) {
+            const nameElement = card.querySelector('.employee-name');
+            const numberElement = card.querySelector('.employee-number');
+
+            if (!nameElement || !numberElement) return;
+
+            const originalName = nameElement.getAttribute('data-original') || nameElement.textContent;
+            const originalNumber = numberElement.getAttribute('data-original') || numberElement.textContent;
+
+            // Store original text
+            nameElement.setAttribute('data-original', originalName);
+            numberElement.setAttribute('data-original', originalNumber);
+
+            // Highlight name
+            const nameRegex = new RegExp(`(${searchQuery})`, 'gi');
+            nameElement.innerHTML = originalName.replace(nameRegex, '<span class="highlight">$1</span>');
+
+            // Highlight number
+            const numberRegex = new RegExp(`(${searchQuery})`, 'gi');
+            numberElement.innerHTML = originalNumber.replace(numberRegex, '<span class="highlight">$1</span>');
+        }
+
+        function removeHighlight(card) {
+            const nameElement = card.querySelector('.employee-name');
+            const numberElement = card.querySelector('.employee-number');
+
+            if (nameElement && nameElement.getAttribute('data-original')) {
+                nameElement.textContent = nameElement.getAttribute('data-original');
+            }
+
+            if (numberElement && numberElement.getAttribute('data-original')) {
+                numberElement.textContent = numberElement.getAttribute('data-original');
+            }
+        }
+
+        // ===== Swipe Gesture System =====
+        let swipeState = {
+            startX: 0,
+            currentX: 0,
+            isDragging: false,
+            card: null
+        };
+
+        function initializeSwipeGestures() {
+            const employeeList = document.getElementById('employeeList');
+
+            employeeList.addEventListener('touchstart', handleTouchStart, {passive: true});
+            employeeList.addEventListener('touchmove', handleTouchMove, {passive: false});
+            employeeList.addEventListener('touchend', handleTouchEnd, {passive: true});
+        }
+
+        function handleTouchStart(e) {
+            const card = e.target.closest('.employee-card');
+            if (!card) return;
+
+            swipeState.card = card;
+            swipeState.startX = e.touches[0].clientX;
+            swipeState.currentX = swipeState.startX;
+            swipeState.isDragging = false;
+            swipeState.isTap = true;
+        }
+
+        function handleTouchMove(e) {
+            if (!swipeState.card) return;
+
+            swipeState.currentX = e.touches[0].clientX;
+            const deltaX = swipeState.currentX - swipeState.startX;
+
+            // Only allow left swipe
+            if (deltaX < -10) {
+                e.preventDefault();
+                swipeState.isDragging = true;
+                swipeState.isTap = false;
+                swipeState.card.classList.add('swiping');
+
+                const translateX = Math.max(deltaX, -100);
+                swipeState.card.style.transform = `translateX(${translateX}px)`;
+
+                // Show swipe actions if not exists
+                let swipeActions = swipeState.card.querySelector('.swipe-actions');
+                if (!swipeActions) {
+                    swipeActions = document.createElement('div');
+                    swipeActions.className = 'swipe-actions';
+                    swipeActions.innerHTML = '<span class="swipe-action-icon">🗑️</span>';
+                    swipeState.card.appendChild(swipeActions);
+                }
+
+                swipeActions.style.width = `${Math.min(Math.abs(deltaX), 100)}px`;
+                if (Math.abs(deltaX) > 50) {
+                    swipeActions.classList.add('visible');
+                } else {
+                    swipeActions.classList.remove('visible');
+                }
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!swipeState.card || !swipeState.isDragging) {
+                swipeState.card = null;
+                return;
+            }
+
+            const deltaX = swipeState.currentX - swipeState.startX;
+            const card = swipeState.card;
+
+            card.classList.remove('swiping');
+
+            // Trigger delete if swiped far enough
+            if (deltaX < -70) {
+                const employeeId = card.getAttribute('data-id');
+                const employeeName = card.querySelector('.employee-name').textContent;
+                showDeleteActionSheet(employeeId, employeeName);
+            }
+
+            // Reset card position
+            card.style.transform = '';
+            const swipeActions = card.querySelector('.swipe-actions');
+            if (swipeActions) {
+                swipeActions.style.width = '0';
+                swipeActions.classList.remove('visible');
+                setTimeout(() => swipeActions.remove(), 300);
+            }
+
+            swipeState.card = null;
+            swipeState.isDragging = false;
+        }
+
+        // ===== Employee Detail Modal =====
+        function showEmployeeDetail(employeeId) {
+            // If we're swiping, don't open detail modal
+            if (swipeState.isDragging) return;
+
+            const card = document.querySelector(`.employee-card[data-id="${employeeId}"]`);
+            if (!card) return;
+
+            const name = card.getAttribute('data-name');
+            const number = card.getAttribute('data-number');
+            const type = card.getAttribute('data-type');
+            const isActive = card.getAttribute('data-active') === '1';
+            const lineRegistered = card.getAttribute('data-line-registered') === 'true';
+            const typeName = type === 'part_time' ? 'アルバイト' : '正社員';
+            const typeToggle = type === 'part_time' ? 'full_time' : 'part_time';
+            const typeToggleName = type === 'part_time' ? '正社員' : 'アルバイト';
+
+            let content = `
+                <div style="text-align: center; margin-bottom: var(--spacing-lg);">
+                    <div style="font-size: var(--font-size-xl); font-weight: 600; margin-bottom: var(--spacing-sm);">${name}</div>
+                    <div class="employee-meta" style="justify-content: center;">
+                        <span class="employee-number">${number}</span>
+                        <span class="badge ${type === 'part_time' ? 'badge-primary' : 'badge-secondary'}">${typeName}</span>
+                        ${lineRegistered ? '<span class="badge badge-success">📱 登録済み</span>' : '<span class="badge badge-warning">📱 未登録</span>'}
+                    </div>
+                </div>
+                <div class="btn-group" style="flex-direction: column; gap: var(--spacing-md);">
+            `;
+
+            if (isActive) {
+                content += `
+                    <button class="btn btn-outline btn-block"
+                            onclick="changeEmployeeType(${employeeId}, '${typeToggle}'); closeDetailModal();">
+                        ${typeToggleName}に変更
+                    </button>
+                    <button class="btn btn-danger btn-block"
+                            onclick="toggleEmployeeStatus(${employeeId}, ${isActive}); closeDetailModal();">
+                        退職処理
+                    </button>
+                `;
+            } else {
+                content += `
+                    <button class="btn btn-success btn-block"
+                            onclick="toggleEmployeeStatus(${employeeId}, ${isActive}); closeDetailModal();">
+                        再雇用
+                    </button>
+                `;
+            }
+
+            content += '</div>';
+
+            document.getElementById('detailModalTitle').textContent = '従業員詳細';
+            document.getElementById('employeeDetailContent').innerHTML = content;
+            document.getElementById('employeeDetailModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDetailModal(event) {
+            if (event && !event.target.classList.contains('modal-overlay')) {
+                return;
+            }
+            document.getElementById('employeeDetailModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // ===== LIFF URL Modal =====
+        function showLiffUrlModal() {
+            document.getElementById('liffUrlModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLiffUrlModal(event) {
+            if (event && !event.target.classList.contains('modal-overlay')) {
+                return;
+            }
+            document.getElementById('liffUrlModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function copyLiffUrl() {
+            const input = document.getElementById('liffUrlInput');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            alert('✅ URLをコピーしました');
+        }
+
+        // ===== Action Sheet =====
+        function showActionSheet(title, message, buttons) {
+            const overlay = document.getElementById('actionSheet');
+            const titleEl = document.getElementById('actionSheetTitle');
+            const messageEl = document.getElementById('actionSheetMessage');
+            const buttonsContainer = document.getElementById('actionSheetButtons');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            buttonsContainer.innerHTML = buttons.map(btn => `
+                <button class="action-sheet-button ${btn.destructive ? 'destructive' : ''}"
+                        onclick="${btn.onclick}">
+                    ${btn.icon ? `<span>${btn.icon}</span>` : ''}
+                    <span>${btn.text}</span>
+                </button>
+            `).join('');
+
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeActionSheet(event) {
+            if (event && !event.target.classList.contains('action-sheet-overlay')) {
+                return;
+            }
+            const overlay = document.getElementById('actionSheet');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function showDeleteActionSheet(employeeId, employeeName) {
+            // Check if employee is active (在職中)
+            const card = document.querySelector(`.employee-card[data-id="${employeeId}"]`);
+            if (!card) return;
+
+            const isActive = card.getAttribute('data-active') === '1';
+
+            // 在職中の従業員は削除不可
+            if (isActive) {
+                showActionSheet(
+                    '削除できません',
+                    '在職中の従業員は削除できません。先に退職処理を行ってください。',
+                    []
+                );
+                return;
+            }
+
+            // Check if password authentication is still valid (within 5 minutes)
+            const now = Date.now();
+            if (passwordAuthState.authenticated && passwordAuthState.expiryTime > now) {
+                // Already authenticated, proceed directly
+                showActionSheet(
+                    `${employeeName}を削除`,
+                    'データベースから削除され、従業員番号は再利用可能になります',
+                    [
+                        {
+                            text: '削除する',
+                            icon: '🗑️',
+                            destructive: true,
+                            onclick: `confirmDelete(${employeeId}); closeActionSheet();`
+                        }
+                    ]
+                );
+            } else {
+                // Need password authentication
+                passwordAuthState.pendingDeleteId = employeeId;
+                passwordAuthState.pendingDeleteName = employeeName;
+                showPasswordSheet();
+            }
+        }
+
+        function confirmDelete(employeeId) {
+            const card = document.querySelector(`.employee-card[data-id="${employeeId}"]`);
+            if (card) {
+                card.classList.add('deleting');
+            }
+
+            deleteEmployee(employeeId);
+        }
+
+        // ===== Password Authentication =====
+        function showPasswordSheet() {
+            const overlay = document.getElementById('passwordSheet');
+            document.getElementById('deletePassword').value = '';
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+
+            // Focus password input after animation
+            setTimeout(() => {
+                document.getElementById('deletePassword').focus();
+            }, 300);
+        }
+
+        function closePasswordSheet(event) {
+            if (event && !event.target.classList.contains('action-sheet-overlay')) {
+                return;
+            }
+            const overlay = document.getElementById('passwordSheet');
+            overlay.classList.remove('show');
+            document.body.style.overflow = '';
+            document.getElementById('deletePassword').value = '';
+        }
+
+        async function verifyPasswordAndDelete() {
+            const password = document.getElementById('deletePassword').value;
+
+            if (!password) {
+                alert('パスワードを入力してください');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/verify_password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({password: password})
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Set authentication state (valid for 5 minutes)
+                    passwordAuthState.authenticated = true;
+                    passwordAuthState.expiryTime = Date.now() + (5 * 60 * 1000);
+
+                    // Close password sheet
+                    closePasswordSheet();
+
+                    // Show delete confirmation
+                    if (passwordAuthState.pendingDeleteId) {
+                        showActionSheet(
+                            `${passwordAuthState.pendingDeleteName}を削除`,
+                            'データベースから削除され、従業員番号は再利用可能になります',
+                            [
+                                {
+                                    text: '削除する',
+                                    icon: '🗑️',
+                                    destructive: true,
+                                    onclick: `confirmDelete(${passwordAuthState.pendingDeleteId}); closeActionSheet();`
+                                }
+                            ]
+                        );
+                    }
+                } else {
+                    alert('❌ パスワードが正しくありません');
+                    document.getElementById('deletePassword').value = '';
+                    document.getElementById('deletePassword').focus();
+                }
+            } catch (error) {
+                alert('❌ パスワード確認に失敗しました: ' + error.message);
+            }
+        }
+
+        // Handle Enter key in password input
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInput = document.getElementById('deletePassword');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        verifyPasswordAndDelete();
+                    }
+                });
+            }
+        });
+
+        // ===== Modal Management =====
+        function showAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+            loadAvailableNumbers();
+        }
+
+        function closeAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.remove('show');
+            document.body.style.overflow = '';
+            document.getElementById('addEmployeeForm').reset();
+        }
+
+        function closeModalOnOverlay(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                closeAddEmployeeModal();
+            }
+        }
+
+        // ===== Load Available Numbers =====
         async function loadAvailableNumbers() {
             try {
                 const response = await fetch('/api/available_employee_numbers?limit=20');
@@ -139,21 +1663,16 @@
                 select.innerHTML = '';
 
                 if (numbers.length === 0) {
-                    const option = document.createElement('option');
-                    option.value = '';
-                    option.textContent = '使用可能な番号がありません';
-                    select.appendChild(option);
+                    select.innerHTML = '<option value="">使用可能な番号がありません</option>';
                     select.disabled = true;
                     return;
                 }
 
-                // 最初の空オプション
                 const emptyOption = document.createElement('option');
                 emptyOption.value = '';
                 emptyOption.textContent = '番号を選択...';
                 select.appendChild(emptyOption);
 
-                // 使用可能な番号を追加
                 numbers.forEach(num => {
                     const option = document.createElement('option');
                     option.value = num;
@@ -169,10 +1688,46 @@
             }
         }
 
-        // 従業員の在籍状況を切り替え
+        // ===== Add Employee =====
+        document.getElementById('addEmployeeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('employeeName').value;
+            const employeeNumber = document.getElementById('employeeNumber').value;
+            const employeeType = document.getElementById('employeeType').value;
+
+            if (!employeeNumber) {
+                alert('従業員番号を選択してください');
+                return;
+            }
+
+            try {
+                const response = await fetch('/employees/add', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        name: name,
+                        employee_number: employeeNumber,
+                        employee_type: employeeType
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ 従業員を追加しました');
+                    location.reload();
+                } else {
+                    alert('❌ エラー: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ 追加に失敗しました: ' + error.message);
+            }
+        });
+
+        // ===== Toggle Employee Status =====
         async function toggleEmployeeStatus(employeeId, currentStatus) {
             const newStatus = currentStatus ? 0 : 1;
-            const statusName = newStatus ? '在籍' : '退職';
             const actionName = newStatus ? '再雇用' : '退職処理';
 
             if (!confirm(`この従業員を${actionName}しますか？`)) {
@@ -202,9 +1757,33 @@
             }
         }
 
-        // 従業員種別を変更
+        // ===== Delete Employee =====
+        async function deleteEmployee(employeeId) {
+            try {
+                const response = await fetch('/employees/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({employee_id: employeeId})
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Wait for delete animation to complete
+                    setTimeout(() => {
+                        location.reload();
+                    }, 400);
+                } else {
+                    alert(`❌ エラー: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`❌ 削除に失敗しました: ${error.message}`);
+            }
+        }
+
+        // ===== Change Employee Type =====
         async function changeEmployeeType(employeeId, newType) {
-            const typeName = newType === 'part_time' ? 'アルバイト' : '社員';
+            const typeName = newType === 'part_time' ? 'アルバイト' : '正社員';
 
             if (!confirm(`この従業員を${typeName}に変更しますか？`)) {
                 return;
@@ -233,55 +1812,32 @@
             }
         }
 
-        // LIFF URLをコピー
-        function copyLiffUrl() {
-            const input = document.getElementById('liffUrl');
-            input.select();
-            document.execCommand('copy');
-            alert('✅ URLをコピーしました');
-        }
-
-        // ページロード時に実行
-        document.addEventListener('DOMContentLoaded', () => {
-            loadAvailableNumbers();
-        });
-
-        // フォーム送信処理
-        document.getElementById('addEmployeeForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('employeeName').value;
-            const employeeNumber = document.getElementById('employeeNumber').value;
-
-            if (!employeeNumber) {
-                alert('従業員番号を選択してください');
+        // ===== Sync from Google Sheets =====
+        async function syncEmployeesFromSheet() {
+            if (!confirm('スプレッドシートから従業員データを同期しますか？')) {
                 return;
             }
 
             try {
-                const response = await fetch('/employees/add', {
+                const response = await fetch('/employees/sync', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        employee_number: employeeNumber
-                    })
+                    headers: {'Content-Type': 'application/json'}
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('✅ 従業員を追加しました');
+                    alert(`✅ 同期成功\n新規: ${result.added}件 / 更新: ${result.updated}件 / 合計: ${result.total}件`);
                     location.reload();
                 } else {
-                    alert('❌ エラー: ' + result.error);
+                    alert(`❌ 同期エラー: ${result.error}`);
                 }
             } catch (error) {
-                alert('❌ 追加に失敗しました: ' + error.message);
+                alert(`❌ 同期に失敗しました: ${error.message}`);
             }
-        });
+        }
+
+        // Note: copyLiffUrl() is already defined above at line 1461
     </script>
 </body>
 </html>
