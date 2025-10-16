@@ -758,6 +758,54 @@ def update_employee_active_status(employee_id, is_active):
     conn.close()
     return affected > 0
 
+def delete_employee_permanent(employee_id):
+    """従業員を物理削除（関連データも削除）
+
+    Args:
+        employee_id: 削除する従業員ID
+
+    Returns:
+        bool: 削除成功時True
+
+    Note:
+        - 関連する勤務予定(work_schedules)も削除
+        - 関連する返信(replies)も削除
+        - 関連する通知先設定(notification_managers)も削除
+        - トランザクションで安全に削除
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # トランザクション開始
+        cursor.execute('BEGIN TRANSACTION')
+
+        # 1. 関連する返信を削除
+        cursor.execute('DELETE FROM replies WHERE employee_id = ?', (employee_id,))
+
+        # 2. 関連する勤務予定を削除
+        cursor.execute('DELETE FROM work_schedules WHERE employee_id = ?', (employee_id,))
+
+        # 3. 関連する通知先設定を削除
+        cursor.execute('DELETE FROM notification_managers WHERE employee_id = ?', (employee_id,))
+
+        # 4. 従業員を削除
+        cursor.execute('DELETE FROM employees WHERE id = ?', (employee_id,))
+
+        affected = cursor.rowcount
+
+        # コミット
+        conn.commit()
+        return affected > 0
+
+    except Exception as e:
+        # エラー時はロールバック
+        conn.rollback()
+        print(f"❌ 従業員削除エラー: {e}")
+        return False
+    finally:
+        conn.close()
+
 def check_all_replied_today():
     """本日送信分の勤務連絡に全員が返信済みかチェック
 

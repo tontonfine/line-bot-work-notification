@@ -21,7 +21,8 @@ from database import (
     update_work_schedule_reply_status, get_latest_pending_schedule,
     get_available_employee_numbers, get_active_employees, update_employee_active_status,
     get_active_workplaces, add_workplace, update_workplace, delete_workplace,
-    get_filtered_schedules, get_schedule_message_content, check_all_replied_today
+    get_filtered_schedules, get_schedule_message_content, check_all_replied_today,
+    delete_employee_permanent
 )
 from line_sender import send_bulk_notifications, send_work_notification
 from auth import require_auth, login_user, logout_user, change_password, is_authenticated
@@ -897,7 +898,7 @@ def verify_password():
 @app.route('/employees/delete', methods=['POST'])
 @csrf.exempt  # 🔐 JavaScript APIはCSRF除外（本番環境ではCSRFトークン実装推奨）
 def delete_employee():
-    """従業員を表示から削除（論理削除、退職者のみ）"""
+    """従業員を物理削除（退職者のみ、関連データも削除）"""
     # 認証チェック
     if not session.get('employee_mgmt_authenticated'):
         logging.warning(f"Unauthorized employee delete attempt from {request.remote_addr}")
@@ -913,7 +914,7 @@ def delete_employee():
 
     # 退職者のみ削除可能
     conn = get_db_connection()
-    employee = conn.execute('SELECT is_active, employee_number FROM employees WHERE id = ?', (employee_id,)).fetchone()
+    employee = conn.execute('SELECT is_active, employee_number, name FROM employees WHERE id = ?', (employee_id,)).fetchone()
     conn.close()
 
     if not employee:
@@ -922,18 +923,14 @@ def delete_employee():
     if employee['is_active'] == 1:
         return jsonify({'error': '在籍中の従業員は削除できません'}), 400
 
-    # 物理削除（データベースから完全に削除）
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM employees WHERE id = ?', (employee_id,))
-    conn.commit()
-    affected = cursor.rowcount
-    conn.close()
+    # 物理削除（データベースから完全に削除、関連データも削除）
+    success = delete_employee_permanent(employee_id)
 
-    if affected > 0:
-        logging.info(f"Employee deleted: id={employee_id}, number={employee['employee_number']} from {request.remote_addr}")
+    if success:
+        logging.info(f"Employee permanently deleted: id={employee_id}, number={employee['employee_number']}, name={employee['name']} from {request.remote_addr}")
         return jsonify({'success': True, 'message': f'従業員を完全に削除しました（従業員番号 {employee["employee_number"]} は再利用可能です）'})
     else:
+        logging.error(f"Failed to delete employee: id={employee_id} from {request.remote_addr}")
         return jsonify({'error': '削除に失敗しました'}), 400
 
 
