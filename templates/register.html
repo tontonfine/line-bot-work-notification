@@ -68,13 +68,22 @@
             </p>
 
             <form id="registrationForm">
-                <div class="mb-4">
+                <div class="mb-3">
                     <label for="employeeNumber" class="form-label">従業員番号</label>
                     <input type="text" class="form-control form-control-lg"
                            id="employeeNumber"
                            placeholder="例: k00001"
                            required>
-                    <div class="form-text">管理者から発行された従業員番号を入力してください（大文字小文字は区別しません）</div>
+                    <div class="form-text">管理者から発行された従業員番号を入力してください</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="employeeName" class="form-label">氏名</label>
+                    <input type="text" class="form-control form-control-lg"
+                           id="employeeName"
+                           placeholder="例: 近藤慰斗（スペースなし）"
+                           required>
+                    <div class="form-text">姓と名をスペースなしで入力してください</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-lg w-100">
@@ -130,9 +139,15 @@
             e.preventDefault();
 
             const employeeNumber = document.getElementById('employeeNumber').value.trim();
+            const employeeName = document.getElementById('employeeName').value.trim();
 
             if (!employeeNumber) {
                 showError('従業員番号を入力してください');
+                return;
+            }
+
+            if (!employeeName) {
+                showError('氏名を入力してください');
                 return;
             }
 
@@ -154,6 +169,7 @@
                     },
                     body: JSON.stringify({
                         employee_number: employeeNumber,
+                        employee_name: employeeName,
                         line_user_id: lineUserId
                     })
                 });

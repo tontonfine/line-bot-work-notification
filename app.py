@@ -465,11 +465,16 @@ def register_employee():
     data = request.json
 
     employee_number = data.get('employee_number')
+    employee_name = data.get('employee_name')
     line_user_id = data.get('line_user_id')
 
     if not employee_number or not line_user_id:
         logging.warning(f"Invalid registration attempt from {request.remote_addr}")
         return jsonify({'error': '従業員番号とLINEユーザーIDは必須です'}), 400
+
+    if not employee_name:
+        logging.warning(f"Missing employee name from {request.remote_addr}")
+        return jsonify({'error': '氏名は必須です'}), 400
 
     # 🔐 入力検証
     valid, error_msg = validate_employee_number(employee_number)
@@ -477,20 +482,25 @@ def register_employee():
         logging.warning(f"Invalid employee_number format from {request.remote_addr}: {error_msg}")
         return jsonify({'error': error_msg}), 400
 
+    valid, error_msg = validate_employee_name(employee_name)
+    if not valid:
+        logging.warning(f"Invalid employee_name format from {request.remote_addr}: {error_msg}")
+        return jsonify({'error': error_msg}), 400
+
     valid, error_msg = validate_line_user_id(line_user_id)
     if not valid:
         logging.warning(f"Invalid line_user_id format from {request.remote_addr}: {error_msg}")
         return jsonify({'error': error_msg}), 400
 
-    # LINEユーザーIDを更新
-    success = update_employee_line_id(employee_number, line_user_id)
+    # LINEユーザーIDを更新（名前確認あり）
+    success = update_employee_line_id(employee_number, line_user_id, employee_name)
 
     if success:
-        logging.info(f"Employee registered: {employee_number} from {request.remote_addr}")
+        logging.info(f"Employee registered: {employee_number} ({employee_name}) from {request.remote_addr}")
         return jsonify({'success': True, 'message': '登録が完了しました'})
     else:
-        logging.warning(f"Failed registration for employee: {employee_number} from {request.remote_addr}")
-        return jsonify({'error': '従業員番号が見つかりません'}), 404
+        logging.warning(f"Failed registration for employee: {employee_number} ({employee_name}) from {request.remote_addr}")
+        return jsonify({'error': '従業員番号または氏名が一致しません'}), 404
 
 
 @app.route('/api/employees')

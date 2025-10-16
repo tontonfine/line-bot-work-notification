@@ -280,14 +280,28 @@ def get_employee_by_line_id(line_user_id):
     conn.close()
     return employee
 
-def update_employee_line_id(employee_number, line_user_id):
-    """従業員のLINEユーザーIDを更新（大文字小文字を区別しない）"""
+def update_employee_line_id(employee_number, line_user_id, employee_name=None):
+    """従業員のLINEユーザーIDを更新（大文字小文字を区別しない、名前確認あり）"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        'UPDATE employees SET line_user_id = ? WHERE LOWER(employee_number) = LOWER(?)',
-        (line_user_id, employee_number)
-    )
+
+    # 名前確認がある場合は、スペースを除去して比較
+    if employee_name:
+        # スペースを除去した名前で検索
+        employee_name_no_space = employee_name.replace(' ', '').replace('　', '')
+        cursor.execute(
+            '''UPDATE employees SET line_user_id = ?
+               WHERE LOWER(employee_number) = LOWER(?)
+               AND REPLACE(REPLACE(name, ' ', ''), '　', '') = ?''',
+            (line_user_id, employee_number, employee_name_no_space)
+        )
+    else:
+        # 名前確認なし（後方互換性のため）
+        cursor.execute(
+            'UPDATE employees SET line_user_id = ? WHERE LOWER(employee_number) = LOWER(?)',
+            (line_user_id, employee_number)
+        )
+
     conn.commit()
     affected = cursor.rowcount
     conn.close()
