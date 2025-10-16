@@ -281,11 +281,11 @@ def get_employee_by_line_id(line_user_id):
     return employee
 
 def update_employee_line_id(employee_number, line_user_id):
-    """従業員のLINEユーザーIDを更新"""
+    """従業員のLINEユーザーIDを更新（大文字小文字を区別しない）"""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        'UPDATE employees SET line_user_id = ? WHERE employee_number = ?',
+        'UPDATE employees SET line_user_id = ? WHERE LOWER(employee_number) = LOWER(?)',
         (line_user_id, employee_number)
     )
     conn.commit()
