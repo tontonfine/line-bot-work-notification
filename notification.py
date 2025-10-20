@@ -56,17 +56,62 @@ def send_reply_summary(replied_list, not_replied_list):
     send_to_managers(message)
     print("📊 返信状況まとめ通知を送信しました")
 
-def send_late_reply_notification(employee_name, reply_text):
-    """遅延返信の即時通知"""
-    message = f"📨 遅延返信がありました\n\n{employee_name}さんから返信:\n「{reply_text[:50]}{'...' if len(reply_text) > 50 else ''}」"
-    send_to_managers(message)
-    print(f"📨 {employee_name}の遅延返信を通知しました")
+def send_late_reply_notification(employee_name, reply_time, pending_employees):
+    """遅延返信の即時通知（未返信者リスト付き）
 
-def send_all_replied_notification(employee_name, reply_time):
-    """全員返信完了の即時通知"""
-    message = f"✅ 全員分の返信が集まりました\n\n最後の返信:\n{employee_name}さん {reply_time}"
+    Args:
+        employee_name: 返信した従業員名
+        reply_time: 返信時刻 (HH:MM形式)
+        pending_employees: 未返信者リスト [{'employee_name': str}, ...]
+    """
+    message = f"📨 遅延返信がありました\n\n{employee_name}さんから返信 ({reply_time})\n"
+
+    # 未返信者リストを追加
+    if pending_employees:
+        message += f"\n⚠️ 残り未返信者 ({len(pending_employees)}人):\n"
+        for emp in pending_employees:
+            message += f"  • {emp['employee_name']}\n"
+    else:
+        message += "\n✅ 全員返信完了"
+
     send_to_managers(message)
-    print(f"✅ 全員返信完了を通知しました（最後: {employee_name}）")
+    print(f"📨 {employee_name}の遅延返信を通知しました（残り未返信: {len(pending_employees)}人）")
+
+def send_all_replied_notification(all_replies_info):
+    """全員返信完了の即時通知（重複防止付き、全員分の時刻表示）"""
+    from database import check_all_replied_notification_sent_today, mark_all_replied_notification_sent
+
+    # 本日既に通知済みかチェック
+    if check_all_replied_notification_sent_today():
+        print(f"⏭️ 全員返信完了通知は既に送信済み（スキップ）")
+        return
+
+    # 全員分の返信情報を整形
+    message = "✅ 全員分の返信が集まりました\n\n返信状況:\n"
+
+    for i, reply in enumerate(all_replies_info):
+        # replied_atをパース（YYYY-MM-DD HH:MM:SS.ffffff形式）
+        replied_at_str = reply['replied_at']
+        try:
+            # タイムスタンプから時刻部分を取得
+            time_part = replied_at_str.split()[1].split('.')[0]  # "HH:MM:SS"
+            time_display = time_part[:5]  # "HH:MM"
+        except (IndexError, AttributeError):
+            time_display = "??:??"
+
+        # 最後の返信にマーク
+        if i == len(all_replies_info) - 1:
+            message += f"  • {reply['employee_name']}さん {time_display} ← 最後\n"
+        else:
+            message += f"  • {reply['employee_name']}さん {time_display}\n"
+
+    send_to_managers(message)
+
+    # 通知済みフラグを記録
+    mark_all_replied_notification_sent()
+
+    last_name = all_replies_info[-1]['employee_name'] if all_replies_info else '不明'
+    print(f"✅ 全員返信完了を通知しました（最後: {last_name}）")
 
 def send_second_reminder_alert(not_replied_list):
     """14:00時点の未返信通知"""

@@ -5,6 +5,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
 import logging
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -22,7 +23,7 @@ from database import (
     get_available_employee_numbers, get_active_employees, update_employee_active_status,
     get_active_workplaces, add_workplace, update_workplace, delete_workplace,
     get_filtered_schedules, get_schedule_message_content, check_all_replied_today,
-    delete_employee_permanent
+    delete_employee_permanent, get_today_all_replies_with_time, get_today_pending_employees
 )
 from line_sender import send_bulk_notifications, send_work_notification
 from auth import require_auth, login_user, logout_user, change_password, is_authenticated
@@ -418,8 +419,8 @@ def handle_message(event):
         deadline_time = get_setting('reply_deadline_time', '13:00')
         deadline_hour, deadline_minute = map(int, deadline_time.split(':'))
 
-        # 現在時刻と比較
-        now = datetime.now()
+        # 現在時刻と比較（日本時間）
+        now = datetime.now(ZoneInfo('Asia/Tokyo'))
         deadline = now.replace(hour=deadline_hour, minute=deadline_minute, second=0, microsecond=0)
         is_late = now > deadline
 
@@ -429,9 +430,14 @@ def handle_message(event):
         if is_late:
             # 遅延返信 - 即座に社員に通知
             print(f"⏰ 遅延返信: {employee['name']} - {message_text}")
-            send_late_reply_notification(employee['name'], message_text)
             # reply_statusを'late_replied'に更新
             update_work_schedule_reply_status(schedule['id'], 'late_replied')
+            # 未返信者リストを取得（この人の返信を反映した後のリスト）
+            pending_employees = get_today_pending_employees()
+            # 返信時刻を取得
+            reply_time = now.strftime('%H:%M')
+            # 遅延返信通知を送信
+            send_late_reply_notification(employee['name'], reply_time, pending_employees)
         else:
             # 通常返信
             print(f"✅ 返信を記録: {employee['name']} - {message_text}")
@@ -441,9 +447,9 @@ def handle_message(event):
         # 全員返信チェック
         all_replied, total_count, replied_count = check_all_replied_today()
         if all_replied and total_count > 0:
-            # 全員が返信した場合、社員に即時通知
-            reply_time = datetime.now().strftime('%H:%M')
-            send_all_replied_notification(employee['name'], reply_time)
+            # 全員が返信した場合、全員分の返信情報を取得して通知
+            all_replies_info = get_today_all_replies_with_time()
+            send_all_replied_notification(all_replies_info)
             print(f"🎉 全員返信完了: {replied_count}/{total_count}人")
 
         # 確認メッセージを返信

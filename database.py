@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 import hashlib
 import bcrypt
@@ -380,7 +381,7 @@ def add_work_schedule(employee_id, work_date, workplace, work_time, message_cont
         '''INSERT INTO work_schedules
            (employee_id, work_date, workplace, work_time, sent_at, message_content)
            VALUES (?, ?, ?, ?, ?, ?)''',
-        (employee_id, work_date, workplace, work_time, datetime.now(), message_content)
+        (employee_id, work_date, workplace, work_time, datetime.now(ZoneInfo('Asia/Tokyo')), message_content)
     )
     conn.commit()
     schedule_id = cursor.lastrowid
@@ -530,7 +531,7 @@ def update_setting(key, value):
            ON CONFLICT(setting_key) DO UPDATE SET
                setting_value = excluded.setting_value,
                updated_at = excluded.updated_at''',
-        (key, value, datetime.now())
+        (key, value, datetime.now(ZoneInfo('Asia/Tokyo')))
     )
     conn.commit()
     conn.close()
@@ -640,7 +641,7 @@ def update_first_reminder_sent(schedule_id):
     cursor = conn.cursor()
     cursor.execute(
         'UPDATE work_schedules SET first_reminder_sent_at = ? WHERE id = ?',
-        (datetime.now(), schedule_id)
+        (datetime.now(ZoneInfo('Asia/Tokyo')), schedule_id)
     )
     conn.commit()
     conn.close()
@@ -651,7 +652,7 @@ def update_second_reminder_sent(schedule_id):
     cursor = conn.cursor()
     cursor.execute(
         'UPDATE work_schedules SET second_reminder_sent_at = ? WHERE id = ?',
-        (datetime.now(), schedule_id)
+        (datetime.now(ZoneInfo('Asia/Tokyo')), schedule_id)
     )
     conn.commit()
     conn.close()
@@ -695,7 +696,7 @@ def get_schedule_message_content(schedule_id):
 def get_today_schedules_by_reply_status():
     """本日送信分の勤務予定を返信状況別に取得"""
     conn = get_db_connection()
-    today = str(datetime.now().date())
+    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
     schedules = conn.execute(
         '''SELECT ws.*, e.name as employee_name, e.line_user_id
            FROM work_schedules ws
@@ -813,7 +814,7 @@ def check_all_replied_today():
         tuple: (all_replied: bool, total_count: int, replied_count: int)
     """
     conn = get_db_connection()
-    today = str(datetime.now().date())
+    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
 
     # 本日送信した全勤務予定を取得
     all_schedules = conn.execute(
@@ -836,6 +837,68 @@ def check_all_replied_today():
     all_replied = (replied_count == total_count)
 
     return all_replied, total_count, replied_count
+
+def get_today_all_replies_with_time():
+    """本日送信分の全返信情報を時刻順に取得
+
+    Returns:
+        list: [{'employee_name': str, 'replied_at': str}, ...]
+    """
+    conn = get_db_connection()
+    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
+
+    # 本日送信した勤務予定とその返信情報を取得
+    replies = conn.execute(
+        '''SELECT e.name as employee_name, r.replied_at
+           FROM work_schedules ws
+           JOIN employees e ON ws.employee_id = e.id
+           LEFT JOIN replies r ON r.schedule_id = ws.id
+           WHERE DATE(ws.sent_at) = ?
+             AND ws.reply_status IN ('replied', 'late_replied')
+           ORDER BY r.replied_at ASC''',
+        (today,)
+    ).fetchall()
+
+    conn.close()
+    return replies
+
+def get_today_pending_employees():
+    """本日送信分の未返信者リストを取得
+
+    Returns:
+        list: [{'employee_name': str}, ...]
+    """
+    conn = get_db_connection()
+    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
+
+    # 本日送信した勤務予定で未返信の従業員を取得
+    pending = conn.execute(
+        '''SELECT e.name as employee_name
+           FROM work_schedules ws
+           JOIN employees e ON ws.employee_id = e.id
+           WHERE DATE(ws.sent_at) = ?
+             AND ws.reply_status = 'pending'
+           ORDER BY e.name''',
+        (today,)
+    ).fetchall()
+
+    conn.close()
+    return pending
+
+def check_all_replied_notification_sent_today():
+    """本日既に全員返信完了通知を送信済みかチェック
+
+    Returns:
+        bool: 本日既に通知済みの場合True
+    """
+    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
+    notification_date = get_setting('all_replied_notification_sent_date')
+    return notification_date == today
+
+def mark_all_replied_notification_sent():
+    """全員返信完了通知を送信済みとして記録"""
+    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
+    update_setting('all_replied_notification_sent_date', today)
 
 if __name__ == '__main__':
     # データベース初期化
