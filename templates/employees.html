@@ -847,6 +847,11 @@
     <!-- Fixed Header -->
     <div class="fixed-header">
         <div class="nav-bar">
+            <div class="nav-actions">
+                <button class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('index') }}'" style="min-height: 36px; padding: 0 var(--spacing-md); font-size: var(--font-size-sm);">
+                    📱 トップ
+                </button>
+            </div>
             <div class="nav-title">👥 従業員管理</div>
             <div class="nav-actions">
                 <button class="icon-btn" onclick="toggleSearch()" title="検索" id="searchToggleBtn">
@@ -855,8 +860,8 @@
                 <button class="icon-btn" onclick="window.location.href='{{ url_for('settings') }}'" title="設定">
                     ⚙️
                 </button>
-                <button class="icon-btn" onclick="window.location.href='{{ url_for('index') }}'" title="送信画面">
-                    📨
+                <button class="icon-btn" onclick="window.location.href='{{ url_for('logout') }}'" title="ログアウト">
+                    🚪
                 </button>
             </div>
         </div>

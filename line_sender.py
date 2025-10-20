@@ -49,15 +49,16 @@ def get_message_from_template(work_date, workplace, work_time):
         str: 生成されたメッセージ
     """
     # デフォルトテンプレート
-    default_template = """【勤務連絡】
+    default_template = """————————————
+【勤務時間連絡】
 
-{date}の勤務についてお知らせします。
+{date}
+{workplace}
 
-勤務場所: {workplace}
-出勤時間: {time}
+ {time}
 
-上記の内容で出勤をお願いします。
-この連絡に返信をお願いします。"""
+お願いします。
+————————————"""
 
     template = get_setting('message_template', default_template)
 
