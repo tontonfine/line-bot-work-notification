@@ -26,7 +26,11 @@ from database import (
     delete_employee_permanent, get_today_all_replies_with_time, get_today_pending_employees
 )
 from line_sender import send_bulk_notifications, send_work_notification
-from auth import require_auth, login_user, logout_user, change_password, is_authenticated
+from auth import (
+    require_auth, require_basic_auth, require_admin_auth,
+    login_user, login_basic_user, login_admin_user,
+    logout_user, change_password, is_authenticated
+)
 from notification import send_late_reply_notification, send_all_replied_notification
 from sheets_sync import sync_employees_from_sheet
 from validators import (
@@ -133,6 +137,7 @@ print("✅ スケジューラーセットアップ完了")
 
 
 @app.route('/')
+@require_basic_auth
 def index():
     """メイン画面（送信管理画面）"""
     employees = get_all_employees()
@@ -309,6 +314,7 @@ def register_page():
 
 
 @app.route('/wizard')
+@require_basic_auth
 def wizard():
     """ウィザード形式の送信画面"""
     workplaces = get_active_workplaces()
@@ -316,12 +322,9 @@ def wizard():
 
 
 @app.route('/employees')
+@require_admin_auth
 def employees_list():
-    """従業員一覧（パスワード認証必要）"""
-    # 従業員管理パスワードのチェック
-    if not session.get('employee_mgmt_authenticated'):
-        return redirect(url_for('employee_login'))
-
+    """従業員一覧（管理者認証必要）"""
     # is_active >= 0 のみ表示（-1は非表示）
     from database import get_db_connection
     conn = get_db_connection()
@@ -574,38 +577,59 @@ def login():
 
 @app.route('/logout')
 def logout():
-    """ログアウト"""
+    """ログアウト（全セッションクリア）"""
     logout_user()
     flash('ログアウトしました', 'info')
-    return redirect(url_for('index'))
+    return redirect(url_for('basic_login'))
+
+
+@app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")  # 🔐 ブルートフォース攻撃対策
+def basic_login():
+    """基本ログイン（トップページアクセス用）"""
+    if request.method == 'POST':
+        password = request.form.get('password')
+        success, message = login_basic_user(password)
+
+        if success:
+            logging.info(f"Successful basic login from {request.remote_addr}")
+            return redirect(url_for('index'))
+        else:
+            flash(message, 'error')
+            logging.warning(f"Failed basic login from {request.remote_addr}")
+
+    return render_template('basic_login.html')
+
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")  # 🔐 ブルートフォース攻撃対策
+def admin_login():
+    """管理者ログイン（従業員管理・設定アクセス用）"""
+    if request.method == 'POST':
+        password = request.form.get('password')
+        success, message = login_admin_user(password)
+
+        if success:
+            logging.info(f"Successful admin login from {request.remote_addr}")
+            return redirect(url_for('employees_list'))
+        else:
+            flash(message, 'error')
+            logging.warning(f"Failed admin login from {request.remote_addr}")
+
+    return render_template('admin_login.html')
 
 
 @app.route('/employees/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")  # 🔐 ブルートフォース攻撃対策
+@limiter.limit("5 per minute")  # 🔐 ブルートフォース攻撃対策（後方互換性のため残す）
 def employee_login():
-    """従業員管理ログイン"""
-    if request.method == 'POST':
-        password = request.form.get('password')
-        stored_hash = get_setting('employee_mgmt_password_hash')
-
-        from database import check_password
-        if stored_hash and check_password(password, stored_hash):
-            session['employee_mgmt_authenticated'] = True
-            logging.info(f"Successful employee management login from {request.remote_addr}")
-            return redirect(url_for('employees_list'))
-        else:
-            flash('パスワードが正しくありません', 'error')
-            logging.warning(f"Failed employee management login from {request.remote_addr}")
-
-    return render_template('employee_login.html')
+    """従業員管理ログイン（後方互換性）"""
+    return redirect(url_for('admin_login'))
 
 
 @app.route('/employees/logout')
 def employee_logout():
-    """従業員管理ログアウト"""
-    session.pop('employee_mgmt_authenticated', None)
-    flash('従業員管理からログアウトしました', 'info')
-    return redirect(url_for('index'))
+    """従業員管理ログアウト（後方互換性のため残す）"""
+    return redirect(url_for('logout'))
 
 
 # ========== 設定管理 ==========
