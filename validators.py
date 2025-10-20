@@ -7,7 +7,7 @@ def validate_employee_number(employee_number):
     従業員番号のフォーマットを検証
 
     Args:
-        employee_number: 検証する従業員番号（例: "k00001"）
+        employee_number: 検証する従業員番号（例: "k00001" または "K00001"）
 
     Returns:
         tuple: (検証成功したか, エラーメッセージ)
@@ -15,8 +15,8 @@ def validate_employee_number(employee_number):
     if not employee_number:
         return False, "従業員番号は必須です"
 
-    # k + 5桁の数字のパターン
-    pattern = r'^k\d{5}$'
+    # k + 5桁の数字のパターン（大文字小文字どちらも可）
+    pattern = r'^[kK]\d{5}$'
     if not re.match(pattern, employee_number):
         return False, "従業員番号は'k'と5桁の数字の形式である必要があります（例: k00001）"
 
