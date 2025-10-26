@@ -6,7 +6,16 @@ import hashlib
 import bcrypt
 import secrets
 
-DB_PATH = 'database.db'
+# データベースパス: 環境変数で指定可能（Render永続ディスク対応）
+# Renderの場合: DATABASE_PATH=/opt/render/project/data/database.db
+# ローカル開発: デフォルトで ./database.db
+DB_PATH = os.getenv('DATABASE_PATH', 'database.db')
+
+# データベースディレクトリが存在しない場合は作成
+db_dir = os.path.dirname(DB_PATH)
+if db_dir and not os.path.exists(db_dir):
+    os.makedirs(db_dir, exist_ok=True)
+    print(f"📁 データベースディレクトリを作成しました: {db_dir}")
 
 def hash_password(password):
     """パスワードをbcryptでハッシュ化（強力な暗号化）"""
