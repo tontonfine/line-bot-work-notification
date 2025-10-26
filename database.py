@@ -191,41 +191,33 @@ def migrate_database():
             )
             print("✅ 初期設定: reply_deadline_time = 13:00")
 
-        cursor.execute("SELECT COUNT(*) FROM system_settings WHERE setting_key='admin_password_hash'")
-        if cursor.fetchone()[0] == 0:
-            # セキュアなランダムパスワード生成
-            admin_password = generate_secure_password(16)
-            initial_password_hash = hash_password(admin_password)
-            cursor.execute(
-                "INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?)",
-                ('admin_password_hash', initial_password_hash)
-            )
-            print("\n" + "="*70)
-            print("🔐 【重要】基本パスワード（トップページアクセス用）が生成されました")
-            print("="*70)
-            print(f"   基本パスワード: {admin_password}")
-            print("   用途: トップページ（送信画面）へのログイン")
-            print("   ⚠️  このパスワードは二度と表示されません！")
-            print("   ⚠️  今すぐ安全な場所に保存してください！")
-            print("="*70 + "\n")
+        # 固定パスワードに強制更新（既存の場合も上書き）
+        admin_password = "kyoshoran"
+        initial_password_hash = hash_password(admin_password)
+        cursor.execute(
+            "INSERT OR REPLACE INTO system_settings (setting_key, setting_value) VALUES (?, ?)",
+            ('admin_password_hash', initial_password_hash)
+        )
+        print("\n" + "="*70)
+        print("🔐 トップページアクセス用パスワードを設定しました")
+        print("="*70)
+        print(f"   基本パスワード: kyoshoran")
+        print("   用途: トップページ（送信画面）へのログイン")
+        print("="*70 + "\n")
 
-        cursor.execute("SELECT COUNT(*) FROM system_settings WHERE setting_key='employee_mgmt_password_hash'")
-        if cursor.fetchone()[0] == 0:
-            # セキュアなランダムパスワード生成
-            employee_mgmt_password = generate_secure_password(16)
-            employee_mgmt_hash = hash_password(employee_mgmt_password)
-            cursor.execute(
-                "INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?)",
-                ('employee_mgmt_password_hash', employee_mgmt_hash)
-            )
-            print("="*70)
-            print("🔐 【重要】管理者パスワード（従業員管理・設定アクセス用）が生成されました")
-            print("="*70)
-            print(f"   管理者パスワード: {employee_mgmt_password}")
-            print("   用途: 従業員管理・設定画面へのログイン")
-            print("   ⚠️  このパスワードは二度と表示されません！")
-            print("   ⚠️  今すぐ安全な場所に保存してください！")
-            print("="*70 + "\n")
+        # 固定パスワードに強制更新（既存の場合も上書き）
+        employee_mgmt_password = "owneradmin"
+        employee_mgmt_hash = hash_password(employee_mgmt_password)
+        cursor.execute(
+            "INSERT OR REPLACE INTO system_settings (setting_key, setting_value) VALUES (?, ?)",
+            ('employee_mgmt_password_hash', employee_mgmt_hash)
+        )
+        print("="*70)
+        print("🔐 管理者ページアクセス用パスワードを設定しました")
+        print("="*70)
+        print(f"   管理者パスワード: owneradmin")
+        print("   用途: 従業員管理・設定画面へのログイン")
+        print("="*70 + "\n")
 
         # 5. notification_managers テーブル作成
         cursor.execute('''
