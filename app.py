@@ -344,7 +344,7 @@ def employees_list():
 def add_employee_route():
     """従業員を手動追加（管理用）"""
     # 認証チェック
-    if not session.get('employee_mgmt_authenticated'):
+    if not session.get('admin_authenticated'):
         logging.warning(f"Unauthorized employee add attempt from {request.remote_addr}")
         return jsonify({'error': '認証が必要です'}), 401
 
@@ -819,7 +819,7 @@ def reset_message_template():
 def update_employee_type_route():
     """従業員種別を変更（アルバイト⇔社員）"""
     # 認証チェック
-    if not session.get('employee_mgmt_authenticated'):
+    if not session.get('admin_authenticated'):
         logging.warning(f"Unauthorized employee type update attempt from {request.remote_addr}")
         return jsonify({'error': '認証が必要です'}), 401
 
@@ -873,7 +873,7 @@ def api_available_employee_numbers():
 def update_employee_status():
     """従業員の在籍状況を更新"""
     # 認証チェック
-    if not session.get('employee_mgmt_authenticated'):
+    if not session.get('admin_authenticated'):
         logging.warning(f"Unauthorized employee status update attempt from {request.remote_addr}")
         return jsonify({'error': '認証が必要です'}), 401
 
@@ -902,7 +902,7 @@ def update_employee_status():
 def verify_password():
     """削除用パスワード検証API"""
     # 認証チェック
-    if not session.get('employee_mgmt_authenticated'):
+    if not session.get('admin_authenticated'):
         logging.warning(f"Unauthorized password verification attempt from {request.remote_addr}")
         return jsonify({'error': '認証が必要です'}), 401
 
@@ -930,7 +930,7 @@ def verify_password():
 def delete_employee():
     """従業員を物理削除（退職者のみ、関連データも削除）"""
     # 認証チェック
-    if not session.get('employee_mgmt_authenticated'):
+    if not session.get('admin_authenticated'):
         logging.warning(f"Unauthorized employee delete attempt from {request.remote_addr}")
         return jsonify({'error': '認証が必要です'}), 401
 
@@ -969,7 +969,7 @@ def delete_employee():
 def sync_employees():
     """Googleスプレッドシートから従業員データを同期"""
     # 認証チェック
-    if not session.get('employee_mgmt_authenticated'):
+    if not session.get('admin_authenticated'):
         logging.warning(f"Unauthorized employee sync attempt from {request.remote_addr}")
         return jsonify({'error': '認証が必要です'}), 401
 
