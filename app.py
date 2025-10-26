@@ -502,15 +502,21 @@ def register_employee():
         logging.warning(f"Invalid line_user_id format from {request.remote_addr}: {error_msg}")
         return jsonify({'error': error_msg}), 400
 
-    # LINEユーザーIDを更新（名前確認あり）
-    success = update_employee_line_id(employee_number, line_user_id, employee_name)
+    # LINEユーザーIDを更新（名前確認あり、UNIQUE制約対応）
+    try:
+        success, error_message = update_employee_line_id(employee_number, line_user_id, employee_name)
 
-    if success:
-        logging.info(f"Employee registered: {employee_number} ({employee_name}) from {request.remote_addr}")
-        return jsonify({'success': True, 'message': '登録が完了しました'})
-    else:
-        logging.warning(f"Failed registration for employee: {employee_number} ({employee_name}) from {request.remote_addr}")
-        return jsonify({'error': '従業員番号または氏名が一致しません'}), 404
+        if success:
+            logging.info(f"Employee registered: {employee_number} ({employee_name}) from {request.remote_addr}")
+            return jsonify({'success': True, 'message': '登録が完了しました'})
+        else:
+            logging.warning(f"Failed registration for employee: {employee_number} ({employee_name}) - {error_message}")
+            return jsonify({'error': error_message or '従業員番号または氏名が一致しません'}), 404
+
+    except Exception as e:
+        # 予期しないエラーのキャッチ
+        logging.error(f"Unexpected error during registration: {employee_number} ({employee_name}) - {str(e)}")
+        return jsonify({'error': '登録処理中にエラーが発生しました。管理者に連絡してください。'}), 500
 
 
 @app.route('/api/employees')

@@ -301,31 +301,99 @@ def get_employee_by_line_id(line_user_id):
     return employee
 
 def update_employee_line_id(employee_number, line_user_id, employee_name=None):
-    """従業員のLINEユーザーIDを更新（大文字小文字を区別しない、名前確認あり）"""
+    """従業員のLINEユーザーIDを更新（大文字小文字を区別しない、名前確認あり）
+
+    UNIQUE制約対応: 同じLINE IDが既に別の従業員に割り当てられている場合、
+    古い割り当てをクリアしてから新しい従業員に割り当てる（トランザクション安全）
+
+    Args:
+        employee_number: 従業員番号
+        line_user_id: LINEユーザーID
+        employee_name: 従業員名（オプション、名前確認用）
+
+    Returns:
+        tuple: (成功フラグ, エラーメッセージまたはNone)
+    """
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 名前確認がある場合は、スペースを除去して比較
-    if employee_name:
-        # スペースを除去した名前で検索
-        employee_name_no_space = employee_name.replace(' ', '').replace('　', '')
+    try:
+        # トランザクション開始
+        conn.execute('BEGIN IMMEDIATE')
+
+        # 1. 対象従業員が存在するか確認（名前確認あり）
+        if employee_name:
+            employee_name_no_space = employee_name.replace(' ', '').replace('　', '')
+            cursor.execute(
+                '''SELECT id, name, employee_number FROM employees
+                   WHERE LOWER(employee_number) = LOWER(?)
+                   AND REPLACE(REPLACE(name, ' ', ''), '　', '') = ?''',
+                (employee_number, employee_name_no_space)
+            )
+        else:
+            cursor.execute(
+                'SELECT id, name, employee_number FROM employees WHERE LOWER(employee_number) = LOWER(?)',
+                (employee_number,)
+            )
+
+        target_employee = cursor.fetchone()
+        if not target_employee:
+            conn.rollback()
+            conn.close()
+            return (False, '従業員番号または氏名が一致しません')
+
+        target_employee_id = target_employee[0]
+
+        # 2. 同じLINE IDが既に別の従業員に割り当てられているかチェック
         cursor.execute(
-            '''UPDATE employees SET line_user_id = ?
-               WHERE LOWER(employee_number) = LOWER(?)
-               AND REPLACE(REPLACE(name, ' ', ''), '　', '') = ?''',
-            (line_user_id, employee_number, employee_name_no_space)
+            'SELECT id, name, employee_number FROM employees WHERE line_user_id = ? AND id != ?',
+            (line_user_id, target_employee_id)
         )
-    else:
-        # 名前確認なし（後方互換性のため）
+        existing_employee = cursor.fetchone()
+
+        if existing_employee:
+            # 既に割り当てられている → 古い割り当てをクリア
+            old_employee_id = existing_employee[0]
+            old_employee_name = existing_employee[1]
+            old_employee_number = existing_employee[2]
+
+            cursor.execute(
+                'UPDATE employees SET line_user_id = NULL WHERE id = ?',
+                (old_employee_id,)
+            )
+            print(f"🔄 LINE ID再割り当て: {old_employee_number}({old_employee_name})から解除")
+
+        # 3. 新しい従業員にLINE IDを割り当て
         cursor.execute(
-            'UPDATE employees SET line_user_id = ? WHERE LOWER(employee_number) = LOWER(?)',
-            (line_user_id, employee_number)
+            'UPDATE employees SET line_user_id = ? WHERE id = ?',
+            (line_user_id, target_employee_id)
         )
 
-    conn.commit()
-    affected = cursor.rowcount
-    conn.close()
-    return affected > 0
+        # トランザクションコミット
+        conn.commit()
+        affected = cursor.rowcount
+        conn.close()
+
+        if affected > 0:
+            return (True, None)
+        else:
+            return (False, '更新に失敗しました')
+
+    except sqlite3.IntegrityError as e:
+        # UNIQUE制約違反などのデータベースエラー
+        conn.rollback()
+        conn.close()
+        error_msg = f'データベースエラー: {str(e)}'
+        print(f"❌ IntegrityError: {error_msg}")
+        return (False, error_msg)
+
+    except Exception as e:
+        # その他の予期しないエラー
+        conn.rollback()
+        conn.close()
+        error_msg = f'予期しないエラー: {str(e)}'
+        print(f"❌ Exception: {error_msg}")
+        return (False, error_msg)
 
 # 勤務場所関連の関数
 def add_workplace(name, sort_order=0):
