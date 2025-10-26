@@ -39,9 +39,31 @@ def generate_secure_password(length=16):
     """安全なランダムパスワードを生成"""
     return secrets.token_urlsafe(length)
 
+def get_db_connection():
+    """
+    データベース接続を取得（マルチワーカー対応）
+    - WALモード有効化: 読み取りと書き込みの競合を削減
+    - タイムアウト30秒: ロック待機時間を延長
+    - ジャーナルモード: WAL (Write-Ahead Logging)
+    """
+    conn = sqlite3.connect(
+        DB_PATH,
+        timeout=30.0,  # 30秒待機（デフォルトは5秒）
+        check_same_thread=False  # マルチスレッド対応
+    )
+    # 行を辞書形式でアクセス可能に
+    conn.row_factory = sqlite3.Row
+    # WALモード有効化（高い同時実行性）
+    conn.execute('PRAGMA journal_mode=WAL')
+    # 同期モードをNORMALに（パフォーマンス向上）
+    conn.execute('PRAGMA synchronous=NORMAL')
+    # 一時ファイルをメモリに保存
+    conn.execute('PRAGMA temp_store=MEMORY')
+    return conn
+
 def init_db():
     """データベースを初期化"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # 従業員テーブル
@@ -97,7 +119,7 @@ def init_db():
 
 def migrate_database():
     """データベースをv2スキーマにマイグレーション"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -250,12 +272,6 @@ def migrate_database():
         raise
     finally:
         conn.close()
-
-def get_db_connection():
-    """データベース接続を取得"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
 
 # 従業員関連の関数
 def add_employee(name, employee_number, line_user_id=None, employee_type='part_time'):
