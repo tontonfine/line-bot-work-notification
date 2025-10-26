@@ -303,8 +303,14 @@ def get_employee_by_line_id(line_user_id):
 def update_employee_line_id(employee_number, line_user_id, employee_name=None):
     """従業員のLINEユーザーIDを更新（大文字小文字を区別しない、名前確認あり）
 
-    UNIQUE制約対応: 同じLINE IDが既に別の従業員に割り当てられている場合、
-    古い割り当てをクリアしてから新しい従業員に割り当てる（トランザクション安全）
+    セキュリティ対応: 同じLINE IDが既に別の従業員に割り当てられている場合は登録を拒否。
+    同じ従業員が別の端末で登録する場合（機種変更）は自動的に更新される。
+
+    動作:
+    - 新規登録: 成功
+    - 同じ従業員が同じ端末で再登録: 成功（冪等）
+    - 同じ従業員が別の端末で登録: 成功（機種変更として自動更新）
+    - 別の従業員が既存の端末で登録: 拒否（セキュリティ確保）
 
     Args:
         employee_number: 従業員番号
@@ -352,18 +358,14 @@ def update_employee_line_id(employee_number, line_user_id, employee_name=None):
         existing_employee = cursor.fetchone()
 
         if existing_employee:
-            # 既に割り当てられている → 古い割り当てをクリア
-            old_employee_id = existing_employee[0]
-            old_employee_name = existing_employee[1]
-            old_employee_number = existing_employee[2]
+            # 既に別の従業員が使っている → 登録を拒否
+            existing_name = existing_employee[1]
+            existing_number = existing_employee[2]
+            conn.rollback()
+            conn.close()
+            return (False, f'このLINE端末は既に別の従業員（{existing_number}: {existing_name}）に登録されています。別の端末を使用してください。')
 
-            cursor.execute(
-                'UPDATE employees SET line_user_id = NULL WHERE id = ?',
-                (old_employee_id,)
-            )
-            print(f"🔄 LINE ID再割り当て: {old_employee_number}({old_employee_name})から解除")
-
-        # 3. 新しい従業員にLINE IDを割り当て
+        # 3. このLINE IDは未使用 → 新しい従業員にLINE IDを割り当て
         cursor.execute(
             'UPDATE employees SET line_user_id = ? WHERE id = ?',
             (line_user_id, target_employee_id)
