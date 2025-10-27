@@ -10,7 +10,7 @@ def require_basic_auth(f):
         # 管理者権限がある場合は基本権限も自動的に付与
         if not (session.get('basic_authenticated') or session.get('admin_authenticated')):
             flash('このページにアクセスするにはログインが必要です', 'warning')
-            return redirect(url_for('basic_login'))
+            return redirect(url_for('auth.basic_login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -20,7 +20,7 @@ def require_admin_auth(f):
     def decorated_function(*args, **kwargs):
         if not session.get('admin_authenticated'):
             flash('このページにアクセスするには管理者権限が必要です', 'warning')
-            return redirect(url_for('admin_login'))
+            return redirect(url_for('auth.admin_login'))
         return f(*args, **kwargs)
     return decorated_function
 

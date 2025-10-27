@@ -394,12 +394,12 @@
     <div class="fixed-header">
         <div class="nav-bar">
             <div class="nav-actions">
-                <a href="{{ url_for('index') }}" class="btn btn-outline btn-sm">📱 トップ</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline btn-sm">📱 トップ</a>
             </div>
             <div class="nav-title">⚙️ 設定</div>
             <div class="nav-actions">
-                <a href="{{ url_for('employees_list') }}" class="btn btn-outline btn-sm">👥 従業員管理</a>
-                <a href="{{ url_for('logout') }}" class="btn btn-outline btn-sm">🚪 ログアウト</a>
+                <a href="{{ url_for('employees.list') }}" class="btn btn-outline btn-sm">👥 従業員管理</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm">🚪 ログアウト</a>
             </div>
         </div>
     </div>

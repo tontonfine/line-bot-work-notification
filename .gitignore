@@ -41,3 +41,15 @@ requirements_full.txt
 
 # Playwright MCP
 .playwright-mcp/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+*.cover
+
+# Type checking
+.mypy_cache/
+
+# Logs directory
+logs/
