@@ -449,11 +449,18 @@ def handle_message(event):
 
         # 全員返信チェック
         all_replied, total_count, replied_count = check_all_replied_today()
+        logging.info(f"📊 全員返信チェック: all_replied={all_replied}, total={total_count}, replied={replied_count}")
+
         if all_replied and total_count > 0:
             # 全員が返信した場合、全員分の返信情報を取得して通知
+            logging.info(f"✅ 全員返信を検知！通知を送信します")
             all_replies_info = get_today_all_replies_with_time()
+            logging.info(f"📝 返信情報を取得: {len(all_replies_info)}件")
             send_all_replied_notification(all_replies_info)
             print(f"🎉 全員返信完了: {replied_count}/{total_count}人")
+            logging.info(f"🎉 全員返信完了通知を送信しました: {replied_count}/{total_count}人")
+        else:
+            logging.info(f"⏳ まだ全員返信していません: {replied_count}/{total_count}人")
 
         # 確認メッセージを返信
         try:

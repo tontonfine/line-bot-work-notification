@@ -79,12 +79,18 @@ def send_late_reply_notification(employee_name, reply_time, pending_employees):
 
 def send_all_replied_notification(all_replies_info):
     """全員返信完了の即時通知（重複防止付き、全員分の時刻表示）"""
+    import logging
     from database import check_all_replied_notification_sent_today, mark_all_replied_notification_sent
+
+    logging.info(f"📢 send_all_replied_notification() 呼び出し: {len(all_replies_info)}件の返信")
 
     # 本日既に通知済みかチェック
     if check_all_replied_notification_sent_today():
+        logging.warning(f"⏭️ 全員返信完了通知は既に送信済み（スキップ）")
         print(f"⏭️ 全員返信完了通知は既に送信済み（スキップ）")
         return
+
+    logging.info(f"✅ 重複防止チェック通過、通知を送信します")
 
     # 全員分の返信情報を整形
     message = "✅ 全員分の返信が集まりました\n\n返信状況:\n"
@@ -105,12 +111,15 @@ def send_all_replied_notification(all_replies_info):
         else:
             message += f"  • {reply['employee_name']}さん {time_display}\n"
 
+    logging.info(f"📤 通知先社員にメッセージを送信: {len(message)}文字")
     send_to_managers(message)
 
     # 通知済みフラグを記録
     mark_all_replied_notification_sent()
+    logging.info(f"🚩 通知済みフラグを記録しました")
 
     last_name = all_replies_info[-1]['employee_name'] if all_replies_info else '不明'
+    logging.info(f"✅ 全員返信完了を通知しました（最後: {last_name}）")
     print(f"✅ 全員返信完了を通知しました（最後: {last_name}）")
 
 def send_second_reminder_alert(not_replied_list):
