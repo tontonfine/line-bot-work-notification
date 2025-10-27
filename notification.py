@@ -93,23 +93,25 @@ def send_all_replied_notification(all_replies_info):
     logging.info(f"✅ 重複防止チェック通過、通知を送信します")
 
     # 全員分の返信情報を整形
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
     message = "✅ 全員分の返信が集まりました\n\n返信状況:\n"
 
-    for i, reply in enumerate(all_replies_info):
-        # replied_atをパース（YYYY-MM-DD HH:MM:SS.ffffff形式）
+    for reply in all_replies_info:
+        # replied_atをパース（YYYY-MM-DD HH:MM:SS.ffffff形式、UTC）
         replied_at_str = reply['replied_at']
         try:
-            # タイムスタンプから時刻部分を取得
-            time_part = replied_at_str.split()[1].split('.')[0]  # "HH:MM:SS"
-            time_display = time_part[:5]  # "HH:MM"
-        except (IndexError, AttributeError):
+            # UTC時刻をパースしてJSTに変換
+            replied_at_utc = datetime.strptime(replied_at_str.split('.')[0], '%Y-%m-%d %H:%M:%S')
+            replied_at_utc = replied_at_utc.replace(tzinfo=ZoneInfo('UTC'))
+            replied_at_jst = replied_at_utc.astimezone(ZoneInfo('Asia/Tokyo'))
+            time_display = replied_at_jst.strftime('%H:%M')
+        except (ValueError, IndexError, AttributeError) as e:
+            logging.warning(f"⚠️ 時刻パースエラー: {replied_at_str} - {e}")
             time_display = "??:??"
 
-        # 最後の返信にマーク
-        if i == len(all_replies_info) - 1:
-            message += f"  • {reply['employee_name']}さん {time_display} ← 最後\n"
-        else:
-            message += f"  • {reply['employee_name']}さん {time_display}\n"
+        message += f"  • {reply['employee_name']}さん {time_display}\n"
 
     logging.info(f"📤 通知先社員にメッセージを送信: {len(message)}文字")
     send_to_managers(message)
