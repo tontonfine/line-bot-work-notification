@@ -31,8 +31,10 @@ def create_app():
     app.config['SECRET_KEY'] = SECRET_KEY
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 
-    # セキュアなセッション設定
-    app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS必須
+    # セキュアなセッション設定（環境別）
+    # 本番環境（HTTPS）ではSecure属性を有効化、開発環境（HTTP）では無効化
+    IS_PRODUCTION = os.getenv('FLASK_ENV') == 'production'
+    app.config['SESSION_COOKIE_SECURE'] = IS_PRODUCTION  # 本番のみHTTPS必須
     app.config['SESSION_COOKIE_HTTPONLY'] = True  # JavaScriptからアクセス不可
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF対策
 
@@ -59,3 +61,7 @@ def create_app():
     register_blueprints(app)
 
     return app
+
+
+# Gunicorn用のappインスタンス（本番環境で必要）
+app = create_app()
