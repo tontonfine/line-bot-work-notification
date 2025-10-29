@@ -753,7 +753,7 @@ def get_schedules_by_date(work_date):
         '''SELECT ws.*, e.name as employee_name, e.line_user_id
            FROM work_schedules ws
            JOIN employees e ON ws.employee_id = e.id
-           WHERE DATE(ws.sent_at) = ?
+           WHERE SUBSTR(ws.sent_at, 1, 10) = ?
            ORDER BY ws.sent_at DESC''',
         (work_date,)
     ).fetchall()
@@ -790,7 +790,7 @@ def get_today_schedules_by_reply_status():
         '''SELECT ws.*, e.name as employee_name, e.line_user_id
            FROM work_schedules ws
            JOIN employees e ON ws.employee_id = e.id
-           WHERE DATE(ws.sent_at) = ?
+           WHERE SUBSTR(ws.sent_at, 1, 10) = ?
            ORDER BY ws.sent_at DESC''',
         (today,)
     ).fetchall()
@@ -910,7 +910,7 @@ def check_all_replied_today():
         '''SELECT ws.id, ws.reply_status, e.name as employee_name
            FROM work_schedules ws
            JOIN employees e ON ws.employee_id = e.id
-           WHERE DATE(ws.sent_at) = ?''',
+           WHERE SUBSTR(ws.sent_at, 1, 10) = ?''',
         (today,)
     ).fetchall()
 
@@ -942,7 +942,7 @@ def get_today_all_replies_with_time():
            FROM work_schedules ws
            JOIN employees e ON ws.employee_id = e.id
            LEFT JOIN replies r ON r.schedule_id = ws.id
-           WHERE DATE(ws.sent_at) = ?
+           WHERE SUBSTR(ws.sent_at, 1, 10) = ?
              AND ws.reply_status IN ('replied', 'late_replied')
            ORDER BY r.replied_at ASC''',
         (today,)
@@ -965,7 +965,7 @@ def get_today_pending_employees():
         '''SELECT e.name as employee_name
            FROM work_schedules ws
            JOIN employees e ON ws.employee_id = e.id
-           WHERE DATE(ws.sent_at) = ?
+           WHERE SUBSTR(ws.sent_at, 1, 10) = ?
              AND ws.reply_status = 'pending'
            ORDER BY e.name''',
         (today,)
