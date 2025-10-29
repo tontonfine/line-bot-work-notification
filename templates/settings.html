@@ -1092,6 +1092,15 @@ info.today_schedules.map(s => `${s.employee_name}
    送信時刻: ${s.sent_at}`).join('\n\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 直近の送信履歴（全期間・最新5件）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${info.recent_schedules_all.length === 0 ? '⚠️ 送信履歴が1件もありません！\n   → データベースが空か、送信に失敗しています' :
+info.recent_schedules_all.map(s => `${s.employee_name}
+   返信状況: ${s.reply_status === 'replied' ? '✅ 返信済み' : s.reply_status === 'late_replied' ? '⏰ 遅刻返信' : '⏳ 未返信'}
+   送信時刻: ${s.sent_at}
+   DATE(sent_at): ${s.sent_date}`).join('\n\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ 全員返信チェック
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 全員返信済み: ${info.reply_check.all_replied ? '✅ はい' : '❌ いいえ'}
@@ -1108,7 +1117,7 @@ info.replies_info.map(r => `${r.employee_name}: ${r.replied_at}`).join('\n') : '
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 💡 診断結果
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${info.managers.length === 0 ? '❌ 問題: 通知先社員が設定されていません\n   → 設定画面で通知先社員を登録してください\n\n' : ''}${info.managers.some(m => !m.line_user_id) ? '❌ 問題: 通知先社員のLINE IDが未登録です\n   → 従業員管理でLINE登録を完了してください\n\n' : ''}${info.today_schedules.length === 0 ? '❌ 問題: 本日の送信履歴がありません\n   → トップ画面から勤務連絡を送信してください\n\n' : ''}${!info.reply_check.all_replied && info.today_schedules.length > 0 ? '⏳ 状態: まだ全員返信していません\n   → 全員が返信するまで待ってください\n\n' : ''}${info.notification_sent_today && info.reply_check.all_replied ? '⚠️ 問題: 既に本日通知済みです\n   → 「通知フラグをリセット」ボタンで再テスト可能\n\n' : ''}${info.reply_check.all_replied && !info.notification_sent_today && info.managers.length > 0 && info.managers.every(m => m.line_user_id) ? '✅ 正常: 通知が送信されるはずです\n   → Renderのログを確認してください\n\n' : ''}`;
+${info.managers.length === 0 ? '❌ 問題: 通知先社員が設定されていません\n   → 設定画面で通知先社員を登録してください\n\n' : ''}${info.managers.some(m => !m.line_user_id) ? '❌ 問題: 通知先社員のLINE IDが未登録です\n   → 従業員管理でLINE登録を完了してください\n\n' : ''}${info.recent_schedules_all.length === 0 ? '❌ 致命的: データベースに送信履歴が1件もありません\n   → 送信処理が完全に失敗しています\n   → アプリログとLINE送信エラーを確認してください\n\n' : ''}${info.recent_schedules_all.length > 0 && info.today_schedules.length === 0 ? '🔍 タイムゾーン問題の可能性:\n   → 直近の送信履歴はあるが、本日の履歴がありません\n   → DATE(sent_at) = "' + (info.recent_schedules_all[0]?.sent_date || '不明') + '" vs today = "' + info.today + '"\n   → タイムゾーンの不一致または日付が変わっています\n   → 本日改めて勤務連絡を送信してテストしてください\n\n' : ''}${info.today_schedules.length === 0 && info.recent_schedules_all.length === 0 ? '' : info.today_schedules.length === 0 ? '' : !info.reply_check.all_replied ? '⏳ 状態: まだ全員返信していません\n   → 全員が返信するまで待ってください\n\n' : ''}${info.notification_sent_today && info.reply_check.all_replied ? '⚠️ 問題: 既に本日通知済みです\n   → 「通知フラグをリセット」ボタンで再テスト可能\n\n' : ''}${info.reply_check.all_replied && !info.notification_sent_today && info.managers.length > 0 && info.managers.every(m => m.line_user_id) ? '✅ 正常: 通知が送信されるはずです\n   → Renderのログを確認してください\n\n' : ''}`;
                 } else {
                     outputDiv.textContent = 'エラー:\n' + data.error + '\n\n' + (data.traceback || '');
                 }

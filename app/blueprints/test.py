@@ -77,7 +77,7 @@ def debug_info():
     from database import (
         get_notification_managers, get_today_schedules_by_reply_status,
         check_all_replied_today, get_today_all_replies_with_time,
-        check_all_replied_notification_sent_today
+        check_all_replied_notification_sent_today, get_db_connection
     )
     from datetime import datetime
     from zoneinfo import ZoneInfo
@@ -102,6 +102,18 @@ def debug_info():
         now = datetime.now(ZoneInfo('Asia/Tokyo'))
         today = str(now.date())
 
+        # 🔍 直近の送信履歴（日付フィルタなし）を取得
+        conn = get_db_connection()
+        recent_schedules = conn.execute(
+            '''SELECT ws.*, e.name as employee_name,
+                      DATE(ws.sent_at) as sent_date
+               FROM work_schedules ws
+               JOIN employees e ON ws.employee_id = e.id
+               ORDER BY ws.sent_at DESC
+               LIMIT 5''',
+        ).fetchall()
+        conn.close()
+
         return jsonify({
             'success': True,
             'debug_info': {
@@ -119,6 +131,14 @@ def debug_info():
                         'reply_status': s['reply_status'],
                         'sent_at': s['sent_at']
                     } for s in schedules
+                ],
+                'recent_schedules_all': [
+                    {
+                        'employee_name': s['employee_name'],
+                        'reply_status': s['reply_status'],
+                        'sent_at': s['sent_at'],
+                        'sent_date': s['sent_date']
+                    } for s in recent_schedules
                 ],
                 'reply_check': {
                     'all_replied': all_replied,
