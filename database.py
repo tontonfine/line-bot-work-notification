@@ -989,6 +989,10 @@ def mark_all_replied_notification_sent():
     today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
     update_setting('all_replied_notification_sent_date', today)
 
+def clear_all_replied_notification_flag():
+    """全員返信完了通知フラグをクリア（テスト用）"""
+    update_setting('all_replied_notification_sent_date', '')
+
 if __name__ == '__main__':
     # データベース初期化
     init_db()

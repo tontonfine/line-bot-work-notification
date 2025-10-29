@@ -47,3 +47,24 @@ def test_check_deadline_plus_1():
             'success': False,
             'error': f'❌ エラー: {str(e)}'
         }), 500
+
+@test_bp.route('/reset_notification_flag', methods=['POST'])
+@csrf.exempt
+@require_auth
+def reset_notification_flag():
+    """テスト用: 全員返信完了通知フラグをリセット"""
+    from database import clear_all_replied_notification_flag
+
+    try:
+        logging.info(f"Notification flag reset triggered from {request.remote_addr}")
+        clear_all_replied_notification_flag()
+        return jsonify({
+            'success': True,
+            'message': '✅ 通知フラグをリセットしました。再度テストできます。'
+        })
+    except Exception as e:
+        logging.error(f"Notification flag reset failed from {request.remote_addr}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'❌ エラー: {str(e)}'
+        }), 500

@@ -53,3 +53,7 @@ htmlcov/
 
 # Logs directory
 logs/
+
+# SQLite temporary files
+*.db-shm
+*.db-wal
