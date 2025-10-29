@@ -984,24 +984,6 @@ def get_today_pending_employees():
     conn.close()
     return pending
 
-def check_all_replied_notification_sent_today():
-    """本日既に全員返信完了通知を送信済みかチェック
-
-    Returns:
-        bool: 本日既に通知済みの場合True
-    """
-    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
-    notification_date = get_setting('all_replied_notification_sent_date')
-    return notification_date == today
-
-def mark_all_replied_notification_sent():
-    """全員返信完了通知を送信済みとして記録"""
-    today = str(datetime.now(ZoneInfo('Asia/Tokyo')).date())
-    update_setting('all_replied_notification_sent_date', today)
-
-def clear_all_replied_notification_flag():
-    """全員返信完了通知フラグをクリア（テスト用）"""
-    update_setting('all_replied_notification_sent_date', '')
 
 if __name__ == '__main__':
     # データベース初期化

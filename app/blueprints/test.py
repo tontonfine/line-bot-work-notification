@@ -48,27 +48,6 @@ def test_check_deadline_plus_1():
             'error': f'❌ エラー: {str(e)}'
         }), 500
 
-@test_bp.route('/reset_notification_flag', methods=['POST'])
-@csrf.exempt
-@require_auth
-def reset_notification_flag():
-    """テスト用: 全員返信完了通知フラグをリセット"""
-    from database import clear_all_replied_notification_flag
-
-    try:
-        logging.info(f"Notification flag reset triggered from {request.remote_addr}")
-        clear_all_replied_notification_flag()
-        return jsonify({
-            'success': True,
-            'message': '✅ 通知フラグをリセットしました。再度テストできます。'
-        })
-    except Exception as e:
-        logging.error(f"Notification flag reset failed from {request.remote_addr}: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f'❌ エラー: {str(e)}'
-        }), 500
-
 @test_bp.route('/debug_info', methods=['GET'])
 @csrf.exempt
 @require_auth
@@ -77,7 +56,7 @@ def debug_info():
     from database import (
         get_notification_managers, get_today_schedules_by_reply_status,
         check_all_replied_today, get_today_all_replies_with_time,
-        check_all_replied_notification_sent_today, get_db_connection
+        get_db_connection
     )
     from datetime import datetime
     from zoneinfo import ZoneInfo
@@ -94,9 +73,6 @@ def debug_info():
 
         # 返信情報
         replies_info = get_today_all_replies_with_time() if all_replied else []
-
-        # 通知済みフラグ
-        notification_sent = check_all_replied_notification_sent_today()
 
         # 現在時刻
         now = datetime.now(ZoneInfo('Asia/Tokyo'))
@@ -150,8 +126,7 @@ def debug_info():
                         'employee_name': r['employee_name'],
                         'replied_at': r['replied_at']
                     } for r in replies_info
-                ],
-                'notification_sent_today': notification_sent
+                ]
             }
         })
     except Exception as e:
