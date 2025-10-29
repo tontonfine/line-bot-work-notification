@@ -290,6 +290,16 @@ def get_all_employees():
     conn.close()
     return employees
 
+def get_employee(employee_id):
+    """従業員IDから従業員を取得"""
+    conn = get_db_connection()
+    employee = conn.execute(
+        'SELECT * FROM employees WHERE id = ?',
+        (employee_id,)
+    ).fetchone()
+    conn.close()
+    return employee
+
 def get_employee_by_line_id(line_user_id):
     """LINEユーザーIDから従業員を取得"""
     conn = get_db_connection()
