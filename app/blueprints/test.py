@@ -82,7 +82,7 @@ def debug_info():
         conn = get_db_connection()
         recent_schedules = conn.execute(
             '''SELECT ws.*, e.name as employee_name,
-                      DATE(ws.sent_at) as sent_date
+                      SUBSTR(ws.sent_at, 1, 10) as sent_date
                FROM work_schedules ws
                JOIN employees e ON ws.employee_id = e.id
                ORDER BY ws.sent_at DESC
