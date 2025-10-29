@@ -660,6 +660,17 @@
                         🔄 通知フラグをリセット
                     </button>
                 </div>
+
+                <div>
+                    <h6 style="font-weight: 600; margin-bottom: var(--spacing-sm);">🐛 デバッグ情報</h6>
+                    <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--spacing-sm);">
+                        現在の状態を確認（通知先社員、返信状況、通知フラグなど）
+                    </p>
+                    <button class="btn btn-info" onclick="showDebugInfo()">
+                        🐛 デバッグ情報を表示
+                    </button>
+                    <div id="debugOutput" style="display: none; margin-top: var(--spacing-md); background: #f8f9fa; padding: var(--spacing-md); border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; overflow-x: auto;"></div>
+                </div>
             </div>
         </div>
 
@@ -1048,6 +1059,62 @@
             })
             .catch(err => {
                 alert('通信エラー: ' + err.message);
+            });
+        }
+
+        function showDebugInfo() {
+            const outputDiv = document.getElementById('debugOutput');
+            outputDiv.style.display = 'block';
+            outputDiv.textContent = '読み込み中...';
+
+            fetch('/test/debug_info')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const info = data.debug_info;
+                    outputDiv.textContent =
+`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 現在時刻: ${info.current_time}
+📅 今日の日付: ${info.today}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👥 通知先社員 (${info.managers.length}人)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${info.managers.length === 0 ? '⚠️ 通知先社員が設定されていません！' :
+info.managers.map(m => `✅ ${m.name}\n   LINE ID: ${m.line_user_id || '❌ 未登録'}`).join('\n\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📨 本日の送信履歴 (${info.today_schedules.length}件)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${info.today_schedules.length === 0 ? '⚠️ 本日の送信履歴がありません！' :
+info.today_schedules.map(s => `${s.employee_name}
+   返信状況: ${s.reply_status === 'replied' ? '✅ 返信済み' : s.reply_status === 'late_replied' ? '⏰ 遅刻返信' : '⏳ 未返信'}
+   送信時刻: ${s.sent_at}`).join('\n\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 全員返信チェック
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+全員返信済み: ${info.reply_check.all_replied ? '✅ はい' : '❌ いいえ'}
+返信済み人数: ${info.reply_check.replied_count} / ${info.reply_check.total_count}人
+
+${info.replies_info.length > 0 ? '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📝 返信情報\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+info.replies_info.map(r => `${r.employee_name}: ${r.replied_at}`).join('\n') : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔔 全員返信完了通知フラグ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+本日既に通知済み: ${info.notification_sent_today ? '✅ はい（再通知されません）' : '❌ いいえ（通知可能）'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 診断結果
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${info.managers.length === 0 ? '❌ 問題: 通知先社員が設定されていません\n   → 設定画面で通知先社員を登録してください\n\n' : ''}${info.managers.some(m => !m.line_user_id) ? '❌ 問題: 通知先社員のLINE IDが未登録です\n   → 従業員管理でLINE登録を完了してください\n\n' : ''}${info.today_schedules.length === 0 ? '❌ 問題: 本日の送信履歴がありません\n   → トップ画面から勤務連絡を送信してください\n\n' : ''}${!info.reply_check.all_replied && info.today_schedules.length > 0 ? '⏳ 状態: まだ全員返信していません\n   → 全員が返信するまで待ってください\n\n' : ''}${info.notification_sent_today && info.reply_check.all_replied ? '⚠️ 問題: 既に本日通知済みです\n   → 「通知フラグをリセット」ボタンで再テスト可能\n\n' : ''}${info.reply_check.all_replied && !info.notification_sent_today && info.managers.length > 0 && info.managers.every(m => m.line_user_id) ? '✅ 正常: 通知が送信されるはずです\n   → Renderのログを確認してください\n\n' : ''}`;
+                } else {
+                    outputDiv.textContent = 'エラー:\n' + data.error + '\n\n' + (data.traceback || '');
+                }
+            })
+            .catch(err => {
+                outputDiv.textContent = '通信エラー: ' + err.message;
             });
         }
     </script>
