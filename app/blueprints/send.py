@@ -2,8 +2,9 @@
 from flask import Blueprint, request, jsonify
 from app.extensions import csrf, limiter
 from line_sender import send_bulk_notifications, send_work_notification
-from database import add_work_schedule
+from database import add_work_schedule, get_employee
 from validators import validate_work_date, validate_workplace_name, validate_work_time
+from notification import send_work_notification_sent
 import logging
 
 send_bp = Blueprint('send', __name__)
@@ -54,6 +55,7 @@ def send_notifications():
 
     # データベースに記録（送信成功したもののみ）
     recorded_count = 0
+    success_employee_names = []
     for i, notification in enumerate(notifications):
         if notification.get('employee_id'):
             # 対応する送信結果を確認
@@ -67,7 +69,22 @@ def send_notifications():
                 )
                 recorded_count += 1
 
+                # 成功した従業員の名前を収集
+                employee = get_employee(notification['employee_id'])
+                if employee:
+                    success_employee_names.append(employee['name'])
+
     logging.info(f"Bulk send: {results['success']} sent, {results['failed']} failed from {request.remote_addr}")
+
+    # 送信完了通知を管理者に送信
+    if success_employee_names and notifications:
+        first_notification = notifications[0]
+        send_work_notification_sent(
+            success_employee_names,
+            first_notification.get('work_date', ''),
+            first_notification.get('workplace', ''),
+            first_notification.get('work_time', '')
+        )
 
     return jsonify({
         'success': True,
@@ -122,6 +139,7 @@ def wizard_send_notifications():
     success_count = 0
     failed_count = 0
     recorded_count = 0
+    success_employee_names = []
 
     for notification in notifications:
         # 個別のカスタムテンプレートを取得
@@ -148,10 +166,25 @@ def wizard_send_notifications():
                     message_content=message_content
                 )
                 recorded_count += 1
+
+                # 成功した従業員の名前を収集
+                employee = get_employee(notification['employee_id'])
+                if employee:
+                    success_employee_names.append(employee['name'])
         else:
             failed_count += 1
 
     logging.info(f"Wizard send: {success_count} sent, {failed_count} failed from {request.remote_addr}")
+
+    # 送信完了通知を管理者に送信
+    if success_employee_names and notifications:
+        first_notification = notifications[0]
+        send_work_notification_sent(
+            success_employee_names,
+            first_notification.get('work_date', ''),
+            first_notification.get('workplace', ''),
+            first_notification.get('work_time', '')
+        )
 
     return jsonify({
         'success': True,

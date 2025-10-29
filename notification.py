@@ -137,6 +137,30 @@ def send_second_reminder_alert(not_replied_list):
     send_to_managers(message)
     print("🚨 14:00未返信アラートを送信しました")
 
+def send_work_notification_sent(employee_list, work_date, workplace, work_time):
+    """勤務連絡送信完了の通知（管理者向け）"""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    if not employee_list:
+        return
+
+    # 現在時刻取得
+    now = datetime.now(ZoneInfo('Asia/Tokyo'))
+    time_display = now.strftime('%H:%M')
+
+    # メッセージ作成
+    message = f"📤 勤務連絡を送信しました\n\n"
+    message += f"送信時刻: {time_display}\n"
+    message += f"送信対象: {len(employee_list)}人\n\n"
+    message += f"✅ 送信完了:\n"
+
+    for emp_name in employee_list:
+        message += f"  • {emp_name}\n"
+
+    send_to_managers(message)
+    print(f"📤 送信完了通知を管理者に送信しました（{len(employee_list)}人分）")
+
 def record_notification(notification_type, recipient_id, schedule_id, message):
     """通知履歴をDBに記録"""
     try:
